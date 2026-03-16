@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>מערכת הפעלה לעורכי תשחצים - Pro Max</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; }
+        
+        .tabs { width: 100%; background: #343a40; display: flex; justify-content: center; padding: 10px 0; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-wrap: wrap;}
+        .tab-btn { background: transparent; color: #adb5bd; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;}
+        .tab-btn:hover { color: #fff; }
+        .tab-btn.active { color: #fff; border-bottom: 3px solid #20c997; }
+
+        .tab-content { display: none; width: 100%; max-width: 1100px; padding: 0 15px; box-sizing: border-box; flex-direction: column; align-items: center;}
+        .tab-content.active { display: flex; }
+
+        h1 { color: #333; margin-bottom: 15px; text-align: center; width: 100%; font-size: 24px;}
+        
+        .panel-box { background: #fff; border-radius: 8px; padding: 15px; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; border: 1px solid #e9ecef;}
+        .panel-title { font-size: 16px; font-weight: bold; color: #495057; margin-bottom: 10px; border-bottom: 2px solid #f8f9fa; padding-bottom: 5px;}
+        
+        input[type="text"], input[type="file"], select, textarea { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #ced4da; border-radius: 5px; box-sizing: border-box; margin-bottom: 10px;}
+        
+        .flex-row { display: flex; gap: 15px; width: 100%; align-items: flex-start; margin-bottom: 10px;}
+        .flex-col { flex: 1; display: flex; flex-direction: column;}
+        
+        button { padding: 10px 15px; font-size: 14px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; font-weight: bold; transition: 0.2s;}
+        button:hover { filter: brightness(0.9); }
+        .btn-green { background-color: #28a745; }
+        .btn-purple { background-color: #6f42c1; }
+        .btn-orange { background-color: #fd7e14; }
+        .btn-red { background-color: #dc3545; }
+        .btn-dark { background-color: #343a40; }
+        .btn-outline { background-color: transparent; border: 1px solid #6c757d; color: #6c757d;}
+        
+        .cell-editor { background: #e8f4f8; border: 1px solid #bce8f1; padding: 15px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
+        .cell-editor textarea { height: 40px; margin-bottom: 0; flex: 2; min-width: 200px;}
+        .cell-editor select { margin-bottom: 0; flex: 1; height: 40px; min-width: 120px;}
+        
+        .file-upload { display: flex; align-items: center; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px dashed #adb5bd; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;}
+        .file-upload input { margin-right: 10px; flex: 1; min-width: 150px;}
+
+        .autocomplete-wrapper { position: relative; flex: 1; min-width: 200px;}
+        .autocomplete-items { position: absolute; border: 1px solid #d4d4d4; border-bottom: none; border-top: none; z-index: 99; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background-color: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 0 0 5px 5px; }
+        .autocomplete-items div { padding: 10px; cursor: pointer; border-bottom: 1px solid #d4d4d4; text-align: right; font-size: 14px; }
+        .autocomplete-items div:hover { background-color: #e9ecef; }
+        .autocomplete-cat { font-size: 11px; color: #6c757d; float: left; margin-top: 2px; }
+
+        .grid-wrapper { width: 100%; max-width: 100vw; overflow-x: auto; text-align: center; padding-bottom: 15px; direction: rtl; display: flex; justify-content: flex-start;}
+        #grid { display: inline-grid; background-color: transparent; border-top: 2px solid #000; border-right: 2px solid #000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin: 0 auto; text-align: right;}
+        .cell { background-color: #fff; display: flex; justify-content: center; align-items: center; text-align: center; font-weight: bold; font-size: 20px; cursor: text; overflow: hidden; word-wrap: break-word; padding: 2px; outline: none; white-space: pre-wrap; line-height: 1.1; box-sizing: border-box; border-bottom: 2px solid #000; border-left: 2px solid #000; width: 40px; height: 40px; transition: background-color 0.3s ease; position: relative;}
+        
+        .cell.active-cell { background-color: #fff3cd; box-shadow: inset 0 0 5px #ffc107;}
+        .cell.highlighted { background-color: #cce5ff; } 
+        .cell.black { background-color: #333 !important; cursor: pointer; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
+        .cell.definition { font-size: 10px; font-weight: bold; background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
+        .cell.just-added { background-color: #d1e7dd !important; box-shadow: inset 0 0 8px #198754; color: #0f5132;}
+        .cell.locked { background-color: #f8f9fa; border: 2px dashed #0d6efd;}
+        .cell.locked::after { content: '📌'; position: absolute; top: -2px; right: 0px; font-size: 12px; }
+        .cell.heatmap-error { background-color: #f8d7da !important; box-shadow: inset 0 0 15px #dc3545; border: 2px solid #dc3545;}
+
+        #suggestionsPanel { display: none; width: 100%; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-sizing: border-box; }
+        #suggestionsList { max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        .suggestion-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; border: 1px solid #ffeeba; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px;}
+        .score-badge { display: inline-block; background: #20c997; color: white; border-radius: 20px; padding: 2px 8px; font-size: 11px; font-weight: bold; margin-left: 10px;}
+        
+        .dict-table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 5px; min-width: 600px;}
+        th, td { padding: 10px; text-align: right; border-bottom: 1px solid #e9ecef; font-size: 13px;}
+        th { background-color: #f8f9fa; color: #495057; }
+        tr:hover { background-color: #f1f3f5; }
+        .cat-tag { background: #6f42c1; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;}
+
+        .action-btn { padding: 4px 8px; font-size: 12px; margin-left: 5px; border-radius: 4px; }
+        .btn-edit { background-color: #ffc107; color: #000; }
+        .btn-delete { background-color: #dc3545; color: #fff; }
+
+        @media print {
+            body { background-color: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .tabs, .controls, .panel-box, #suggestionsPanel, .cell-editor { display: none !important; }
+            .grid-wrapper { display: block !important; overflow: visible !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important;}
+            #grid { margin: 0 auto !important; box-shadow: none !important; display: grid !important; page-break-inside: avoid;}
+            .cell:not(.definition):not(.black) { background-color: #fff !important; }
+            .cell.active-cell, .cell.highlighted, .cell.just-added { background-color: #fff !important; box-shadow: none !important;}
+            .cell.locked { border: 2px solid #000 !important; }
+            .cell.locked::after { display: none !important; }
+        }
+
+        #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 15px;}
+        .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('editor')">📝 סדנת העורך</button>
+        <button class="tab-btn" onclick="switchTab('dictionary')">🧠 מנהל המאגר</button>
+    </div>
+
+    <div id="tab-editor" class="tab-content active">
+        
+        <div class="panel-box">
+            <div class="panel-title">1. הזרקת מילות שלד (עוגנים)</div>
+            <p style="font-size: 13px; color: #555; margin-top: 0;">הקלד מילים להזרקה (מופרדות בפסיקים). ניתן לבחור מההצעות, או לכתוב מילים חדשות. כולן יינעצו בלוח.</p>
+            <div class="flex-row">
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="directWordInput" placeholder="הקלד מילה, או רשימת מילים עם פסיק..." autocomplete="off">
+                    <div id="autocompleteList" class="autocomplete-items"></div>
+                </div>
+                <button class="btn-theme" onclick="injectDirectWords()" style="white-space: nowrap; height: 40px;">הכנס ונעץ בלוח 📌</button>
+            </div>
+        </div>
+
+        <div class="panel-box">
+            <div class="panel-title">2. פאנל שליטה ובניית הלוח</div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 5px; align-items: center; flex-wrap: wrap;">
+                <label style="font-weight: bold; cursor: pointer; color: #007bff; font-size: 14px;">
+                    <input type="checkbox" id="symmetryMode"> 🪞 מצב סימטריה
+                </label>
+                <div style="border-right: 2px solid #ccc; height: 20px; display: none;"></div>
+                <button class="btn-red" style="padding: 5px 10px; font-size: 13px;" onclick="runHeatmap()">🔥 סרוק מפת חום</button>
+                <button id="btnAutoFix" class="btn-dark" style="padding: 5px 10px; font-size: 13px; display: none;" onclick="autoFixHeatmap()">🛠️ תקן חורים</button>
+                <span style="font-size: 12px; color: #666; width: 100%;">💡 קליק ימני נועל משבצת (📌) | דאבל קליק להשחרה.</span>
+            </div>
+
+            <div class="cell-editor" id="cellEditorPanel">
+                <div style="font-weight: bold; color: #0c5460; width: 100%;">עורך הגדרות (בחר משבצת בלוח):</div>
+                <textarea id="ceText" placeholder="הקלד פה את ההגדרה..." oninput="updateActiveCellFromPanel()"></textarea>
+                <div style="display: flex; gap: 5px; width: 100%;">
+                    <select id="ceArrow1" onchange="updateActiveCellFromPanel()">
+                        <option value="">ללא חץ 1</option>
+                        <option value="→">→ (ימינה)</option>
+                        <option value="←">← (שמאלה)</option>
+                        <option value="↓">↓ (למטה)</option>
+                        <option value="↑">↑ (למעלה)</option>
+                        <option value="↙">↙ (אלכסון)</option>
+                        <option value="↘">↘ (אלכסון ימין למטה)</option>
+                        <option value="↖">↖ (אלכסון שמאל למעלה)</option>
+                    </select>
+                    <select id="ceArrow2" onchange="updateActiveCellFromPanel()">
+                        <option value="">ללא חץ 2</option>
+                        <option value="→">→ (ימינה)</option>
+                        <option value="↓">↓ (למטה)</option>
+                        <option value="↙">↙ (אלכסון)</option>
+                    </select>
+                </div>
+                <button class="btn-red" style="width: 100%;" onclick="convertCellToEmpty()">בטל הגדרה ממשבצת</button>
+            </div>
+
+            <div class="flex-row">
+                <div class="flex-col" style="flex: 1;">
+                    <select id="activeCategoryFilter" style="margin-bottom: 0;">
+                        <option value="ALL">מכל הקטגוריות</option>
+                    </select>
+                </div>
+                <button class="btn-dark" style="flex: 1.5;" onclick="searchPatternInDB()">🔍 מנתח חללים (מציע)</button>
+                <button class="btn-orange" style="flex: 1.5;" onclick="suggestQualityWords()">💡 הצע מילים (יועץ)</button>
+                <button class="btn-purple" style="flex: 2;" onclick="generateCrossword()">✨ מילוי לוח אוטומטי (AutoFill)</button>
+            </div>
+        </div>
+
+        <div id="suggestionsPanel">
+            <h3 id="suggestionsTitle">היועץ החכם מציע:</h3>
+            <div id="suggestionsList"></div>
+        </div>
+
+        <div class="grid-wrapper">
+            <div id="grid"></div>
+        </div>
+        
+        <div class="panel-box" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+            <button class="btn-green" onclick="addRow(true)">⬆️</button>
+            <button class="btn-green" onclick="addRow(false)">⬇️</button>
+            <button class="btn-green" onclick="addCol(true)">➡️</button>
+            <button class="btn-green" onclick="addCol(false)">⬅️</button>
+            <span style="border-left: 2px solid #ccc; margin: 0 5px;"></span>
+            <button class="btn-outline" onclick="printEmpty()">🖨️ הדפס PDF</button>
+            <button style="background-color: #20c997; color: white; border:none; border-radius:5px; padding:10px 15px; font-weight:bold; cursor:pointer;" onclick="exportToDigital()">📱 ייצא משחק דיגיטלי לטלפון</button>
+            <button class="btn-outline" onclick="saveState()">💾 שמור לוח</button>
+            <button class="btn-outline" onclick="loadState()">📂 טען לוח</button>
+            <button class="btn-red" onclick="clearGrid()">🗑️ נקה לוח</button>
+        </div>
+    </div>
+
+
+    <div id="tab-dictionary" class="tab-content">
+        <h1>מנהל המאגר</h1>
+        <div class="dict-stats">
+            <span id="stat-total">סה"כ מילים: 0</span>
+            <span id="stat-avg">ציון ממוצע: 0</span>
+            <span id="stat-cats">קטגוריות: 0</span>
+            <button class="btn-red" style="padding: 5px 10px; font-size: 12px; margin-top: 10px;" onclick="clearEntireDatabase()">מחק את כל המאגר</button>
+        </div>
+        
+        <div class="flex-row">
+            <div class="panel-box flex-col" style="margin-bottom:0;">
+                <div class="panel-title">ייבוא מקבצים (TXT)</div>
+                <div style="display: flex; gap: 10px; flex-direction: column; margin-bottom: 10px;">
+                    <input type="text" id="fileCatInput" placeholder="שם הקטגוריה (אופציונלי)">
+                    <label style="font-size: 12px;">
+                        <input type="checkbox" id="skipLongWords" checked> סנן מושגים של מעל 3 מילים
+                    </label>
+                </div>
+                <div class="file-upload" style="margin-bottom: 0;">
+                    <input type="file" id="fileInput" accept=".txt,.csv" onchange="importFileToDatabase()" multiple>
+                </div>
+            </div>
+
+            <div class="panel-box flex-col" style="margin-bottom:0;">
+                <div class="panel-title">הוספה ידנית</div>
+                <input type="text" id="addWordInput" placeholder="מילה">
+                <input type="text" id="addDefInput" placeholder="הגדרה (אופציונלי)">
+                <input type="text" id="addCatInput" placeholder="קטגוריה">
+                <button class="btn-green" onclick="addWordsToDatabase()">➕ הוסף למאגר</button>
+            </div>
+        </div>
+
+        <div class="panel-box">
+            <div class="panel-title">תוכן המאגר</div>
+            <div style="margin-bottom: 10px;">
+                <input type="text" id="searchDictInput" placeholder="חפש מילה לעריכה..." onkeyup="updateDictUI()">
+            </div>
+            <div class="dict-table-container">
+                <table id="dictTable">
+                    <thead><tr><th>מילה</th><th>חיפוש (נקי)</th><th>הגדרה</th><th>קטגוריה</th><th>ציון</th><th>פעולות</th></tr></thead>
+                    <tbody id="dictTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">עריכת מושג</h3>
+            <label>מילה מקורית:</label>
+            <input type="text" id="editOriginalInput">
+            <label>הגדרה:</label>
+            <textarea id="editDefInput" rows="3"></textarea>
+            <label>קטגוריה:</label>
+            <input type="text" id="editCatInput">
+            <input type="hidden" id="editKeyInput">
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                <button class="btn-outline" onclick="closeEditModal()">ביטול</button>
+                <button class="btn-green" onclick="saveEditedWord()">שמור שינויים</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================== מנוע המאגר (DB) ==================
+        let smartDB = {}; 
+        
+        function cleanWord(word) {
+            if (!word) return "";
+            let str = word.replace(/\s+/g, '').trim(); 
+            const finalsMap = {'ם':'מ', 'ן':'נ', 'ץ':'צ', 'ף':'פ', 'ך':'כ'}; 
+            return str.replace(/[םןץףך]/g, match => finalsMap[match]);
+        }
+
+        function calculateCrosswordScore(cleanWordStr, originalWordStr) {
+            let score = 50; 
+            let len = cleanWordStr.length;
+            if (len >= 4 && len <= 6) score += 20;
+            else if (len === 2 || len === 3) score += 5;
+            if (len >= 12) score -= (len - 11) * 5; 
+            let wordCount = originalWordStr.trim().split(/\s+/).length;
+            if (wordCount === 3) score -= 20;
+            if (wordCount > 3) score -= 60; 
+
+            const goodLetters = ['א', 'ה', 'ו', 'י', 'מ', 'ת', 'ר', 'ל'];
+            const badLetters = ['ז', 'ט', 'ס', 'צ', 'ג', 'ק', 'פ'];
+            for (let char of cleanWordStr) {
+                if (goodLetters.includes(char)) score += 3;
+                if (badLetters.includes(char)) score -= 4;
+            }
+            return Math.max(0, Math.min(100, score)); 
+        }
+
+        function saveDB() { localStorage.setItem('crosswordSmartDB', JSON.stringify(smartDB)); updateDictUI(); }
+        function loadDB() { const data = localStorage.getItem('crosswordSmartDB'); if(data) smartDB = JSON.parse(data); updateDictUI(); }
+
+        function insertToDB(originalWord, def, category) {
+            originalWord = originalWord.trim();
+            if (originalWord.length < 2) return false;
+            let cWord = cleanWord(originalWord);
+            
+            let skipLong = document.getElementById('skipLongWords') ? document.getElementById('skipLongWords').checked : false;
+            if(skipLong && originalWord.split(/\s+/).length > 3) return false;
+
+            if (!smartDB[cWord]) {
+                smartDB[cWord] = { original: originalWord, def: def || `הגדרה ל-${originalWord}`, category: category || "כללי", score: calculateCrosswordScore(cWord, originalWord) };
+                return true;
+            }
+            return false;
+        }
+
+        function addWordsToDatabase() {
+            let words = document.getElementById('addWordInput').value.split(',');
+            let def = document.getElementById('addDefInput').value.trim();
+            let cat = document.getElementById('addCatInput').value.trim();
+            if(words.length === 0 || words[0] === "") return alert("הכנס מילה!");
+            let count = 0; words.forEach(w => { if(insertToDB(w, def, cat)) count++; });
+            saveDB(); document.getElementById('addWordInput').value = ''; document.getElementById('addDefInput').value = '';
+            alert(`הוספו ${count} מילים למאגר!`);
+        }
+
+        function importFileToDatabase() {
+            const fileInput = document.getElementById('fileInput');
+            let manualCat = document.getElementById('fileCatInput').value.trim();
+            if (!fileInput.files || fileInput.files.length === 0) return;
+            
+            let filesProcessed = 0; let totalWordsAdded = 0;
+            Array.from(fileInput.files).forEach(file => {
+                const reader = new FileReader();
+                let currentCat = manualCat || file.name.replace(/\.[^/.]+$/, "");
+                reader.onload = function(e) {
+                    const words = e.target.result.split(/[\n,\r\t]+/); 
+                    let count = 0; words.forEach(w => { if(insertToDB(w, "", currentCat)) count++; });
+                    totalWordsAdded += count; filesProcessed++;
+                    if (filesProcessed === fileInput.files.length) {
+                        saveDB(); fileInput.value = ''; document.getElementById('fileCatInput').value = '';
+                        alert(`נשאבו בהצלחה ${totalWordsAdded} מילים חדשות!`);
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function clearEntireDatabase() { if(confirm("בטוח? הפעולה תמחק את כל המילים ששמרת!")) { smartDB = {}; saveDB(); } }
+
+        function deleteWord(cWord) { if(confirm(`למחוק את המילה "${smartDB[cWord].original}"?`)) { delete smartDB[cWord]; saveDB(); } }
+
+        function openEditModal(cWord) {
+            const entry = smartDB[cWord];
+            document.getElementById('editOriginalInput').value = entry.original;
+            document.getElementById('editDefInput').value = entry.def;
+            document.getElementById('editCatInput').value = entry.category;
+            document.getElementById('editKeyInput').value = cWord;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+
+        function saveEditedWord() {
+            const oldKey = document.getElementById('editKeyInput').value;
+            const newOriginal = document.getElementById('editOriginalInput').value.trim();
+            const newDef = document.getElementById('editDefInput').value.trim();
+            const newCat = document.getElementById('editCatInput').value.trim();
+            if(newOriginal.length < 2) return alert("מילה קצרה מדי!");
+            const newKey = cleanWord(newOriginal);
+            if(newKey !== oldKey) {
+                if(smartDB[newKey]) return alert("המילה החדשה כבר קיימת במאגר!");
+                delete smartDB[oldKey];
+            }
+            smartDB[newKey] = { original: newOriginal, def: newDef, category: newCat, score: calculateCrosswordScore(newKey, newOriginal) };
+            saveDB(); closeEditModal();
+        }
+
+        function updateDictUI() {
+            const tbody = document.getElementById('dictTableBody');
+            const filterDropdown = document.getElementById('activeCategoryFilter');
+            const searchQ = document.getElementById('searchDictInput') ? document.getElementById('searchDictInput').value.trim().toLowerCase() : "";
+            
+            if(tbody) tbody.innerHTML = '';
+            let totalScore = 0; let count = 0; let categories = new Set();
+            let keys = Object.keys(smartDB);
+            
+            if(searchQ !== "") keys = keys.filter(k => smartDB[k].original.toLowerCase().includes(searchQ) || smartDB[k].def.toLowerCase().includes(searchQ));
+            let sortedWords = keys.sort((a,b) => smartDB[b].score - smartDB[a].score);
+            
+            if(tbody) {
+                sortedWords.slice(0, 100).forEach(cWord => {
+                    let entry = smartDB[cWord]; let tr = document.createElement('tr');
+                    let scoreColor = '#dc3545'; if(entry.score >= 70) scoreColor = '#28a745'; else if(entry.score >= 40) scoreColor = '#fd7e14';
+                    tr.innerHTML = `
+                        <td>${entry.original}</td><td style="color:#aaa; font-size:11px;">${cWord}</td>
+                        <td style="max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${entry.def}">${entry.def}</td>
+                        <td><span class="cat-tag">${entry.category}</span></td><td style="font-weight:bold; color: ${scoreColor}">${entry.score}</td>
+                        <td><button class="action-btn btn-edit" onclick="openEditModal('${cWord}')">✏️</button><button class="action-btn btn-delete" onclick="deleteWord('${cWord}')">🗑️</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+            
+            for (let key in smartDB) { totalScore += smartDB[key].score; categories.add(smartDB[key].category); count++; }
+            let stTotal = document.getElementById('stat-total');
+            if(stTotal) {
+                stTotal.innerText = `סה"כ מילים: ${count}`;
+                document.getElementById('stat-avg').innerText = `ציון ממוצע: ${count > 0 ? Math.round(totalScore/count) : 0}`;
+                document.getElementById('stat-cats').innerText = `קטגוריות: ${categories.size}`;
+            }
+
+            let currentFilter = filterDropdown.value;
+            filterDropdown.innerHTML = '<option value="ALL">מכל הקטגוריות במאגר</option>';
+            categories.forEach(c => { let opt = document.createElement('option'); opt.value = c; opt.innerText = c; filterDropdown.appendChild(opt); });
+            if(categories.has(currentFilter)) filterDropdown.value = currentFilter;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active'); document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+
+        // ================== מנוע חיפוש (Autocomplete) מתוקן לפסיקים ==================
+        const directInput = document.getElementById('directWordInput');
+        const autoList = document.getElementById('autocompleteList');
+
+        directInput.addEventListener('input', function() {
+            let val = this.value; 
+            let terms = val.split(',');
+            let currentTerm = terms[terms.length - 1].trim().toLowerCase();
+            autoList.innerHTML = '';
+            
+            if (currentTerm.length < 2) return;
+            
+            let matches = Object.values(smartDB).filter(entry => 
+                entry.original.toLowerCase().includes(currentTerm) || cleanWord(entry.original).includes(currentTerm)
+            );
+            
+            matches.slice(0, 10).forEach(match => {
+                let div = document.createElement('div');
+                div.innerHTML = `<strong>${match.original}</strong> <span class="autocomplete-cat">(${match.category})</span>`;
+                div.addEventListener('click', function() { 
+                    terms[terms.length - 1] = " " + match.original;
+                    directInput.value = terms.join(',').trim() + ", "; 
+                    autoList.innerHTML = ''; 
+                    directInput.focus();
+                });
+                autoList.appendChild(div);
+            });
+        });
+        document.addEventListener('click', function (e) { if (e.target !== directInput) { autoList.innerHTML = ''; } });
+
+
+        // ================== מנוע הלוח והעורך ==================
+        const gridElement = document.getElementById('grid');
+        let rows = 15; let cols = 15;
+        let cells = []; let activeCell = null;
+        let gridLogic = []; let placedWordsInfo = [];
+        let currentDir = 'horizontal'; let currentHighlightedCells = [];
+
+        function getCellCoords(cellDOM) {
+            for(let r=0; r<rows; r++) { for(let c=0; c<cols; c++) { if(cells[r][c] === cellDOM) return {r, c}; } }
+            return {r: -1, c: -1};
+        }
+
+        function createSingleCell() {
+            const cell = document.createElement('div');
+            cell.classList.add('cell'); cell.contentEditable = true;
+            
+            cell.addEventListener('click', function(e) {
+                if (this.dataset.focused === 'true') currentDir = currentDir === 'horizontal' ? 'vertical' : 'horizontal';
+                document.querySelectorAll('.cell').forEach(i => i.dataset.focused = 'false');
+                this.dataset.focused = 'true';
+                let {r, c} = getCellCoords(this);
+                if(r > -1) { activeCell = this; highlightSlot(r, c, currentDir); syncPanelWithCell(this); }
+            });
+
+            cell.addEventListener('dblclick', function() {
+                let {r, c} = getCellCoords(this);
+                if(r > -1) toggleBlackBlock(r, c);
+            });
+
+            cell.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                if(this.classList.contains('black') || this.classList.contains('definition')) return;
+                this.classList.toggle('locked');
+            });
+
+            cell.addEventListener('input', function() { 
+                if (this.innerText.trim().length > 1 && !this.classList.contains('black')) {
+                    this.classList.add('definition');
+                } else {
+                    this.classList.remove('definition');
+                }
+                this.classList.remove('heatmap-error'); 
+                syncPanelWithCell(this); 
+            });
+            
+            return cell;
+        }
+
+        const arrowChars = ['→','←','↓','↑','↙','↖','↘'];
+        
+        function syncPanelWithCell(cell) {
+            if(!cell || !cell.classList.contains('definition')) {
+                document.getElementById('ceText').value = '';
+                document.getElementById('ceArrow1').value = ''; document.getElementById('ceArrow2').value = '';
+                return;
+            }
+            let text = cell.innerText; let extractedText = ""; let arrows = [];
+            for(let char of text) {
+                if(arrowChars.includes(char)) arrows.push(char);
+                else if(char !== '\n') extractedText += char;
+            }
+            document.getElementById('ceText').value = extractedText.trim();
+            document.getElementById('ceArrow1').value = arrows[0] || ''; document.getElementById('ceArrow2').value = arrows[1] || '';
+        }
+
+        function updateActiveCellFromPanel() {
+            if(!activeCell) return alert("לחץ קודם על משבצת בלוח כדי שתהפוך להגדרה.");
+            let text = document.getElementById('ceText').value.trim();
+            let a1 = document.getElementById('ceArrow1').value; let a2 = document.getElementById('ceArrow2').value;
+            if(text === '' && a1 === '' && a2 === '') return;
+            
+            activeCell.classList.add('definition'); activeCell.classList.remove('black', 'locked', 'heatmap-error'); activeCell.contentEditable = false;
+            let content = text; if(a1) content += '\n' + a1; if(a2) content += '\n' + a2;
+            activeCell.innerText = content;
+        }
+
+        function convertCellToEmpty() {
+            if(!activeCell) return;
+            activeCell.classList.remove('definition'); activeCell.innerText = ''; activeCell.contentEditable = true;
+            syncPanelWithCell(null);
+        }
+
+        function highlightSlot(r, c, dir) {
+            document.querySelectorAll('.cell').forEach(cell => { cell.classList.remove('highlighted', 'active-cell'); });
+            if (cells[r][c].classList.contains('black') || cells[r][c].classList.contains('definition')) return;
+            cells[r][c].classList.add('active-cell'); currentHighlightedCells = [];
+            
+            let i = dir === 'horizontal' ? c : r;
+            while(i >= 0) { let cell = dir === 'horizontal' ? cells[r][i] : cells[i][c]; if (cell.classList.contains('black') || cell.classList.contains('definition')) break; currentHighlightedCells.push(cell); i--; }
+            i = (dir === 'horizontal' ? c : r) + 1;
+            while(i < (dir === 'horizontal' ? cols : rows)) { let cell = dir === 'horizontal' ? cells[r][i] : cells[i][c]; if (cell.classList.contains('black') || cell.classList.contains('definition')) break; currentHighlightedCells.push(cell); i++; }
+
+            currentHighlightedCells.sort((a,b) => { let pA = getCellCoords(a); let pB = getCellCoords(b); return dir === 'horizontal' ? pB.c - pA.c : pA.r - pB.r; });
+            currentHighlightedCells.forEach(cell => { if(!cell.classList.contains('active-cell')) cell.classList.add('highlighted'); });
+        }
+
+
+        function searchPatternInDB() {
+            if(currentHighlightedCells.length < 2) return alert("סמן חלל של לפחות 2 משבצות בלוח!");
+            let patternStr = "^"; let hasLetters = false;
+            currentHighlightedCells.forEach(cell => {
+                let val = cell.innerText.trim();
+                if(val.length === 1 && !arrowChars.includes(val)) { patternStr += val; hasLetters = true; } else { patternStr += "."; }
+            });
+            patternStr += "$";
+            
+            let regex = new RegExp(patternStr); let matches = [];
+            let filterCat = document.getElementById('activeCategoryFilter').value;
+
+            for (let cWord in smartDB) {
+                let entry = smartDB[cWord];
+                if (filterCat !== "ALL" && entry.category !== filterCat) continue;
+                if (regex.test(cWord) && !placedWordsInfo.some(i => i.word === cWord)) { matches.push(entry); }
+            }
+
+            const panel = document.getElementById('suggestionsPanel'); const list = document.getElementById('suggestionsList'); const title = document.getElementById('suggestionsTitle');
+            list.innerHTML = '';
+            let patDisp = patternStr.replace('^','').replace('$','').replace(/\./g, '_').split('').join(' ');
+            title.innerText = `מנתח החללים מצא התאמות לתבנית: [ ${patDisp} ]`;
+
+            if (matches.length === 0) { 
+                list.innerHTML = `<p>לא נמצאו מילים שמתאימות לתבנית.</p>`; 
+            } else {
+                matches.sort((a,b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    return a.original.localeCompare(b.original);
+                });
+
+                matches.forEach(sugg => {
+                    const item = document.createElement('div'); item.className = 'suggestion-item';
+                    item.innerHTML = `<div><span class="suggestion-word">${sugg.original}</span><span class="score-badge">ציון: ${sugg.score}</span></div>`;
+                    const btn = document.createElement('button'); btn.className = 'btn-dark'; btn.style.padding = '5px 10px'; btn.style.fontSize = '12px'; btn.innerText = 'הזרק לחלל!';
+                    
+                    btn.onclick = function() { 
+                        let cWord = cleanWord(sugg.original);
+                        currentHighlightedCells.forEach((cell, idx) => { cell.innerText = cWord[idx]; cell.classList.add('locked'); });
+                        let p = getCellCoords(currentHighlightedCells[0]);
+                        placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
+                        let dict = {}; dict[cWord] = sugg.def; placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
+                        panel.style.display = 'none'; currentHighlightedCells.forEach(c => c.classList.add('just-added'));
+                    };
+                    item.appendChild(btn); list.appendChild(item);
+                });
+            }
+
+            let manualDiv = document.createElement('div');
+            manualDiv.style.cssText = "margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;";
+            manualDiv.innerHTML = `
+                <div style="font-size:13px; font-weight:bold; margin-bottom:5px; color:#495057;">הכנס מילה ידנית לחלל זה (${currentHighlightedCells.length} אותיות):</div>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="manualSlotInput" placeholder="הקלד כאן..." maxlength="${currentHighlightedCells.length}" style="margin-bottom:0;">
+                    <button class="btn-theme" onclick="forceInjectToSlot()" style="white-space:nowrap;">הזרק ונעץ 📌</button>
+                </div>
+            `;
+            list.appendChild(manualDiv);
+            panel.style.display = 'block';
+        }
+
+        function forceInjectToSlot() {
+            let val = document.getElementById('manualSlotInput').value.trim();
+            let cWord = cleanWord(val);
+            if(cWord.length !== currentHighlightedCells.length) {
+                return alert(`המילה חייבת להיות בדיוק בת ${currentHighlightedCells.length} אותיות!`);
+            }
+            if(!smartDB[cWord]) insertToDB(val, "", "הוזן ידנית ללוח");
+            
+            currentHighlightedCells.forEach((cell, idx) => { cell.innerText = cWord[idx]; cell.classList.add('locked'); });
+            let p = getCellCoords(currentHighlightedCells[0]);
+            placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
+            let dict = {}; dict[cWord] = smartDB[cWord] ? smartDB[cWord].def : ""; 
+            placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
+            document.getElementById('suggestionsPanel').style.display = 'none'; 
+            currentHighlightedCells.forEach(c => c.classList.add('just-added'));
+        }
+
+        function toggleBlackBlock(r, c, forceBlack = null) {
+            let target = cells[r][c];
+            let willBeBlack = forceBlack !== null ? forceBlack : !target.classList.contains('black');
+            const applyBlack = (row, col, isBlack) => {
+                let t = cells[row][col];
+                if(isBlack) {
+                    t.classList.add('black'); t.innerText = ''; t.contentEditable = false;
+                    t.classList.remove('definition', 'locked', 'heatmap-error', 'active-cell', 'highlighted');
+                } else {
+                    t.classList.remove('black'); t.contentEditable = true;
+                }
+            };
+            applyBlack(r, c, willBeBlack);
+            if(document.getElementById('symmetryMode').checked) {
+                let oppR = rows - 1 - r; let oppC = cols - 1 - c;
+                if(oppR !== r || oppC !== c) applyBlack(oppR, oppC, willBeBlack);
+            }
+        }
+
+        function runHeatmap() {
+            cells.forEach(row => row.forEach(c => c.classList.remove('heatmap-error')));
+            syncLogicFromDOM();
+            let errors = 0;
+            
+            for(let r=0; r<rows; r++) {
+                let currentWordCells = [];
+                for(let c=0; c<=cols; c++) {
+                    if(c < cols && gridLogic[r][c] !== 'BLK' && gridLogic[r][c] !== 'DEF') { currentWordCells.push(cells[r][c]); } 
+                    else {
+                        if(currentWordCells.length > 0 && currentWordCells.length < 2) { currentWordCells.forEach(cell => cell.classList.add('heatmap-error')); errors++; }
+                        currentWordCells = [];
+                    }
+                }
+            }
+            for(let c=0; c<cols; c++) {
+                let currentWordCells = [];
+                for(let r=0; r<=rows; r++) {
+                    if(r < rows && gridLogic[r][c] !== 'BLK' && gridLogic[r][c] !== 'DEF') { currentWordCells.push(cells[r][c]); } 
+                    else {
+                        if(currentWordCells.length > 0 && currentWordCells.length < 2) { currentWordCells.forEach(cell => cell.classList.add('heatmap-error')); errors++; }
+                        currentWordCells = [];
+                    }
+                }
+            }
+            if(errors > 0) {
+                alert(`⚠️ נמצאו אזורים מתים (רווח של משבצת בודדת). לחץ על "תקן חורים" כדי לחסום אותם.`);
+                document.getElementById('btnAutoFix').style.display = 'inline-block';
+            } else {
+                alert("✅ הלוח נקי! אין חללים של משבצת בודדת.");
+                document.getElementById('btnAutoFix').style.display = 'none';
+            }
+        }
+
+        function autoFixHeatmap() {
+            let fixed = 0;
+            cells.forEach((row, r) => {
+                row.forEach((cell, c) => {
+                    if(cell.classList.contains('heatmap-error')) { toggleBlackBlock(r, c, true); fixed++; }
+                });
+            });
+            if(fixed > 0) { runHeatmap(); alert("כל השגיאות נחסמו בהצלחה!"); }
+            document.getElementById('btnAutoFix').style.display = 'none';
+        }
+
+        function renderDOM() {
+            gridElement.innerHTML = '';
+            gridElement.style.gridTemplateColumns = `repeat(${cols}, 40px)`;
+            gridElement.style.gridTemplateRows = `repeat(${rows}, 40px)`;
+            for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) gridElement.appendChild(cells[r][c]);
+        }
+
+        function initGrid() {
+            cells = []; gridLogic = Array(rows).fill(null).map(() => Array(cols).fill('')); placedWordsInfo = [];
+            for (let r = 0; r < rows; r++) { let rowCells = []; for (let c = 0; c < cols; c++) rowCells.push(createSingleCell()); cells.push(rowCells); }
+            renderDOM();
+        }
+
+        function clearNewHighlights() { document.querySelectorAll('.cell.just-added').forEach(c => c.classList.remove('just-added')); }
+        function highlightNewCells(r, c, length, isH) { for (let i = 0; i < length; i++) { let currR = isH ? r : r + i; let currC = isH ? c + i : c; cells[currR][currC].classList.add('just-added'); } }
+
+        function addRow(isTop) {
+            let newRowCells = []; let newRowLogic = [];
+            for (let c = 0; c < cols; c++) { newRowCells.push(createSingleCell()); newRowLogic.push(''); }
+            if (isTop) { cells.unshift(newRowCells); gridLogic.unshift(newRowLogic); placedWordsInfo.forEach(i => i.r++); } else { cells.push(newRowCells); gridLogic.push(newRowLogic); }
+            rows++; renderDOM();
+        }
+
+        function addCol(isRight) {
+            for (let r = 0; r < rows; r++) {
+                let newCell = createSingleCell();
+                if (isRight) { cells[r].unshift(newCell); gridLogic[r].unshift(''); } else { cells[r].push(newCell); gridLogic[r].push(''); }
+            }
+            if (isRight) placedWordsInfo.forEach(i => i.c++);
+            cols++; renderDOM();
+        }
+
+        function clearGrid() { if(confirm("לנקות הלוח?")) { rows = 15; cols = 15; initGrid(); activeCell = null; document.getElementById('suggestionsPanel').style.display='none';} }
+        function printEmpty() { document.body.classList.add('print-empty-mode'); window.print(); setTimeout(() => { document.body.classList.remove('print-empty-mode'); }, 1000); }
+        
+        function syncLogicFromDOM() {
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    if(cells[r][c].classList.contains('black')) gridLogic[r][c] = 'BLK';
+                    else if(cells[r][c].classList.contains('definition')) gridLogic[r][c] = 'DEF';
+                    else { gridLogic[r][c] = (cells[r][c].innerText.trim().length === 1 && !arrowChars.includes(cells[r][c].innerText.trim())) ? cells[r][c].innerText.trim() : ''; }
+                }
+            }
+        }
+
+        function saveState() {
+            syncLogicFromDOM();
+            const state = [];
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    state.push({ text: cells[r][c].innerText, isBlack: cells[r][c].classList.contains('black'), isDef: cells[r][c].classList.contains('definition'), isLocked: cells[r][c].classList.contains('locked') });
+                }
+            }
+            localStorage.setItem('tashbetzSavedGrid', JSON.stringify({visual: state, logic: gridLogic, placed: placedWordsInfo, r: rows, c: cols}));
+            alert("הלוח נשמר!");
+        }
+
+        function loadState() {
+            const savedData = localStorage.getItem('tashbetzSavedGrid');
+            if (!savedData) return;
+            const data = JSON.parse(savedData);
+            rows = data.r || 15; cols = data.c || 15;
+            initGrid(); gridLogic = data.logic; placedWordsInfo = data.placed || [];
+            let i = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    cells[r][c].innerText = data.visual[i].text;
+                    if (data.visual[i].isBlack) { cells[r][c].classList.add('black'); cells[r][c].contentEditable = false; }
+                    if (data.visual[i].isDef) cells[r][c].classList.add('definition');
+                    if (data.visual[i].isLocked) cells[r][c].classList.add('locked');
+                    i++;
+                }
+            }
+        }
+
+        function checkPlacementRules(logicArray, word, r, c, isHorizontal) {
+            if (isHorizontal && c + word.length > cols) return false;
+            if (!isHorizontal && r + word.length > rows) return false;
+            
+            if (isHorizontal) {
+                if (c > 0 && logicArray[r][c - 1] !== '' && logicArray[r][c - 1] !== 'BLK') return false;
+                if (c + word.length < cols && logicArray[r][c + word.length] !== '' && logicArray[r][c + word.length] !== 'BLK') return false;
+            } else {
+                if (r > 0 && logicArray[r - 1][c] !== '' && logicArray[r - 1][c] !== 'BLK') return false;
+                if (r + word.length < rows && logicArray[r + word.length][c] !== '' && logicArray[r + word.length][c] !== 'BLK') return false;
+            }
+            
+            let intersections = 0;
+            for (let i = 0; i < word.length; i++) {
+                let currR = isHorizontal ? r : r + i; let currC = isHorizontal ? c + i : c;
+                let charInGrid = logicArray[currR][currC];
+                let cellDOM = cells[currR]?.[currC];
+                
+                if (charInGrid === 'BLK' || charInGrid === 'DEF') return false;
+                if (cellDOM && cellDOM.classList.contains('locked')) { if (charInGrid !== word[i]) return false; }
+                if (charInGrid !== '' && charInGrid !== word[i]) return false; 
+                if (charInGrid === word[i]) intersections++;
+                
+                if (charInGrid === '') {
+                    if (isHorizontal) {
+                        if (currR > 0 && logicArray[currR - 1][currC] !== '' && logicArray[currR - 1][currC] !== 'BLK') return false;
+                        if (currR < rows - 1 && logicArray[currR + 1][currC] !== '' && logicArray[currR + 1][currC] !== 'BLK') return false;
+                    } else {
+                        if (currC > 0 && logicArray[currR][currC - 1] !== '' && logicArray[currR][currC - 1] !== 'BLK') return false;
+                        if (currC < cols - 1 && logicArray[currR][currC + 1] !== '' && logicArray[currR][currC + 1] !== 'BLK') return false;
+                    }
+                }
+            }
+            return { valid: true, intersections: intersections };
+        }
+
+        // --- תיקון: הזרקה חכמה רב-שלבית לפסיקים ---
+        function injectDirectWords() {
+            clearNewHighlights(); syncLogicFromDOM();
+            const inputField = document.getElementById('directWordInput');
+            const text = inputField.value;
+            if (!text.trim()) return;
+            
+            document.getElementById('autocompleteList').innerHTML = ''; 
+
+            const newWords = text.split(/[\n,]+/).map(w => w.trim()).filter(w => w.length > 0);
+            
+            // מכניס למאגר קודם
+            newWords.forEach(originalWord => {
+                let cWord = cleanWord(originalWord);
+                if (cWord.length > 1 && !smartDB[cWord]) {
+                    insertToDB(originalWord, "", "עוגן (שלד)");
+                }
+            });
+
+            // מנסה לשבץ בגלים (כדי לאפשר להם להתחבר)
+            let wordsToPlace = newWords.map(w => cleanWord(w)).filter(w => w.length > 1 && !placedWordsInfo.some(info => info.word === w));
+            if (wordsToPlace.length === 0) { inputField.value = ''; return; }
+
+            let successfullyPlaced = 0;
+            let attempts = 0;
+            let placedInThisRun = true;
+            
+            while (wordsToPlace.length > 0 && attempts < 10) {
+                placedInThisRun = false;
+                for (let i = 0; i < wordsToPlace.length; i++) {
+                    let cWord = wordsToPlace[i];
+                    let bestPlacement = null;
+
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            let resH = checkPlacementRules(gridLogic, cWord, r, c, true);
+                            if (resH.valid && resH.intersections > 0) { if(!bestPlacement || resH.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: true, def: smartDB[cWord].def}; }
+                            let resV = checkPlacementRules(gridLogic, cWord, r, c, false);
+                            if (resV.valid && resV.intersections > 0) { if(!bestPlacement || resV.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: false, def: smartDB[cWord].def}; }
+                        }
+                    }
+
+                    if (!bestPlacement && placedWordsInfo.length === 0) {
+                        let startR = Math.floor(rows / 2); let startC = Math.floor((cols - cWord.length) / 2);
+                        if(startC >= 0 && checkPlacementRules(gridLogic, cWord, startR, startC, true).valid) bestPlacement = {word: cWord, r: startR, c: startC, isH: true, def: smartDB[cWord].def};
+                    }
+
+                    if (bestPlacement) {
+                        for (let j = 0; j < cWord.length; j++) {
+                            let currR = bestPlacement.isH ? bestPlacement.r : bestPlacement.r + j;
+                            let currC = bestPlacement.isH ? bestPlacement.c + j : bestPlacement.c;
+                            gridLogic[currR][currC] = cWord[j]; 
+                            cells[currR][currC].innerText = cWord[j];
+                            cells[currR][currC].classList.add('locked'); 
+                        }
+                        placedWordsInfo.push({word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH});
+                        let tempDict = {}; tempDict[cWord] = bestPlacement.def; placeDefinitions([{word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH}], tempDict);
+                        highlightNewCells(bestPlacement.r, bestPlacement.c, cWord.length, bestPlacement.isH);
+                        successfullyPlaced++;
+                        
+                        wordsToPlace.splice(i, 1);
+                        i--; 
+                        placedInThisRun = true;
+                    }
+                }
+                if (!placedInThisRun) break; 
+                attempts++;
+            }
+            saveDB(); inputField.value = ''; 
+            if (wordsToPlace.length > 0) {
+                alert(`שובצו ${successfullyPlaced} עוגנים. ${wordsToPlace.length} עוגנים לא שובצו כי לא נמצאה להם נקודת חיתוך. התחל לבנות סביב מה ששובץ!`);
+            }
+        }
+
+        // --- מילוי לוח אוטומטי (AutoFill מלא) ---
+        function generateCrossword() {
+            clearNewHighlights(); syncLogicFromDOM();
+            let filterCat = document.getElementById('activeCategoryFilter').value;
+            
+            let wordsObj = Object.values(smartDB);
+            if (filterCat !== "ALL") wordsObj = wordsObj.filter(w => w.category === filterCat);
+            if (wordsObj.length === 0) return alert("אין מספיק מילים במאגר לקטגוריה הזו!");
+            
+            let words = wordsObj.sort((a,b) => b.score - a.score).slice(0, 80).map(obj => cleanWord(obj.original));
+            let bestResult = null; let maxPlaced = -1;
+            
+            for(let attempt = 0; attempt < 100; attempt++) {
+                let currentWords = [...words];
+                if (attempt > 0) currentWords.sort(() => Math.random() - 0.5); 
+
+                let tempLogic = gridLogic.map(row => [...row]);
+                let tempPlaced = [...placedWordsInfo];
+                let newlyPlaced = 0;
+
+                if (tempPlaced.length === 0 && currentWords.length > 0) {
+                    let fw = currentWords[0];
+                    let sr = Math.floor(rows / 2); let sc = Math.floor((cols - fw.length) / 2);
+                    if(sc >= 0 && checkPlacementRules(tempLogic, fw, sr, sc, true).valid) {
+                        for (let i = 0; i < fw.length; i++) tempLogic[sr][sc + i] = fw[i];
+                        tempPlaced.push({word: fw, r: sr, c: sc, isHorizontal: true});
+                        newlyPlaced++;
+                    }
+                }
+
+                for (let i = 1; i < currentWords.length; i++) {
+                    let word = currentWords[i]; let placed = false;
+                    if (tempPlaced.some(info => info.word === word)) continue; 
+
+                    for (let r = 0; r < rows && !placed; r++) {
+                        for (let c = 0; c < cols && !placed; c++) {
+                            if (tempLogic[r][c] !== '' && tempLogic[r][c] !== 'BLK' && tempLogic[r][c] !== 'DEF') {
+                                let matchIdx = word.indexOf(tempLogic[r][c]);
+                                if (matchIdx !== -1) {
+                                    if (r - matchIdx >= 0 && checkPlacementRules(tempLogic, word, r - matchIdx, c, false).valid) {
+                                        for (let j = 0; j < word.length; j++) tempLogic[r - matchIdx + j][c] = word[j];
+                                        tempPlaced.push({word: word, r: r - matchIdx, c: c, isHorizontal: false}); placed = true; newlyPlaced++;
+                                    }
+                                    else if (c - matchIdx >= 0 && checkPlacementRules(tempLogic, word, r, c - matchIdx, true).valid) {
+                                        for (let j = 0; j < word.length; j++) tempLogic[r][c - matchIdx + j] = word[j];
+                                        tempPlaced.push({word: word, r: r, c: c - matchIdx, isHorizontal: true}); placed = true; newlyPlaced++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (newlyPlaced > maxPlaced) { maxPlaced = newlyPlaced; bestResult = {logic: tempLogic, placed: tempPlaced}; }
+            }
+
+            if(bestResult && maxPlaced > 0) {
+                gridLogic = bestResult.logic; placedWordsInfo = bestResult.placed;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if(gridLogic[r][c] !== '' && gridLogic[r][c] !== 'BLK' && gridLogic[r][c] !== 'DEF') {
+                            cells[r][c].innerText = gridLogic[r][c];
+                        }
+                    }
+                }
+                let dictForPlacement = {};
+                placedWordsInfo.forEach(info => { if(smartDB[info.word]) dictForPlacement[info.word] = smartDB[info.word].def; });
+                placeDefinitions(placedWordsInfo, dictForPlacement);
+            } else {
+                alert("לא הצלחנו לשבץ מילים נוספות. נסה להוסיף מילות דבק למאגר.");
+            }
+        }
+
+        // --- הצע מילים (יועץ) ---
+        function suggestQualityWords() {
+            clearNewHighlights(); syncLogicFromDOM();
+            let filterCat = document.getElementById('activeCategoryFilter').value;
+            let suggestions = [];
+            let isBoardEmpty = placedWordsInfo.length === 0;
+
+            if(Object.keys(smartDB).length === 0) return alert("המאגר ריק!");
+
+            for (let cWord in smartDB) {
+                let entry = smartDB[cWord];
+                if (filterCat !== "ALL" && entry.category !== filterCat) continue; 
+                if (placedWordsInfo.some(info => info.word === cWord)) continue; 
+                
+                let bestPlacement = null;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        let resH = checkPlacementRules(gridLogic, cWord, r, c, true);
+                        if (resH.valid && (resH.intersections > 0 || isBoardEmpty)) {
+                            if(!bestPlacement || resH.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, original: entry.original, r: r, c: c, isH: true, def: entry.def, int: resH.intersections, score: entry.score};
+                        }
+                        let resV = checkPlacementRules(gridLogic, cWord, r, c, false);
+                        if (resV.valid && (resV.intersections > 0 || isBoardEmpty)) {
+                            if(!bestPlacement || resV.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, original: entry.original, r: r, c: c, isH: false, def: entry.def, int: resV.intersections, score: entry.score};
+                        }
+                    }
+                }
+                if (bestPlacement) suggestions.push(bestPlacement);
+            }
+
+            const panel = document.getElementById('suggestionsPanel'); const list = document.getElementById('suggestionsList'); const title = document.getElementById('suggestionsTitle'); list.innerHTML = '';
+            title.innerText = "היועץ מציע הצעות שמתאימות ללוח:";
+            if (suggestions.length === 0) { list.innerHTML = `<p>אין התאמות לקטגוריה.</p>`; panel.style.display = 'block'; return; }
+
+            suggestions.sort((a, b) => {
+                if (b.int !== a.int) return b.int - a.int;
+                return b.score - a.score;
+            });
+
+            suggestions.slice(0, 15).forEach(sugg => {
+                const item = document.createElement('div'); item.className = 'suggestion-item';
+                let overlapText = sugg.int > 0 ? `מצליב ${sugg.int} אותיות` : "עוגן ראשון";
+                item.innerHTML = `<div><span class="suggestion-word">${sugg.original}</span><span class="score-badge">ציון: ${sugg.score}</span><span style="font-size:11px; color:#999; margin-right:15px;">(${sugg.isH ? 'מאוזן' : 'מאונך'}, ${overlapText})</span></div>`;
+                const btn = document.createElement('button'); btn.className = 'btn-green'; btn.style.padding = '5px 10px'; btn.style.fontSize = '12px'; btn.innerText = 'שבץ אותי!';
+                
+                // התיקון הקריטי: שבץ אותי דוחף ללוח
+                btn.onclick = function() {
+                    for (let j = 0; j < sugg.word.length; j++) {
+                        let currR = sugg.isH ? sugg.r : sugg.r + j; let currC = sugg.isH ? sugg.c + j : sugg.c;
+                        gridLogic[currR][currC] = sugg.word[j]; cells[currR][currC].innerText = sugg.word[j];
+                    }
+                    placedWordsInfo.push({word: sugg.word, r: sugg.r, c: sugg.c, isHorizontal: sugg.isH});
+                    let dict = {}; dict[sugg.word] = sugg.def; placeDefinitions([{word: sugg.word, r: sugg.r, c: sugg.c, isHorizontal: sugg.isH}], dict);
+                    highlightNewCells(sugg.r, sugg.c, sugg.word.length, sugg.isH);
+                    panel.style.display = 'none'; 
+                };
+                item.appendChild(btn); list.appendChild(item);
+            });
+            panel.style.display = 'block';
+        }
+
+        function placeDefinitions(wordsInfoList, dict) {
+            wordsInfoList.forEach(info => {
+                let definition = dict[info.word];
+                if(definition) {
+                    let defPlaced = false;
+                    if(info.isHorizontal) {
+                        if(info.c > 0 && gridLogic[info.r][info.c - 1] === '') { cells[info.r][info.c - 1].innerText = definition + '\n←'; cells[info.r][info.c - 1].classList.add('definition'); gridLogic[info.r][info.c - 1] = 'DEF'; defPlaced = true; } 
+                        else if(!defPlaced && info.r > 0 && gridLogic[info.r - 1][info.c] === '') { cells[info.r - 1][info.c].innerText = definition + '\n↓'; cells[info.r - 1][info.c].classList.add('definition'); gridLogic[info.r - 1][info.c] = 'DEF'; defPlaced = true; }
+                    } else {
+                        if(info.r > 0 && gridLogic[info.r - 1][info.c] === '') { cells[info.r - 1][info.c].innerText = definition + '\n↓'; cells[info.r - 1][info.c].classList.add('definition'); gridLogic[info.r - 1][info.c] = 'DEF'; defPlaced = true; } 
+                        else if(!defPlaced && info.c > 0 && gridLogic[info.r][info.c - 1] === '') { cells[info.r][info.c - 1].innerText = definition + '\n←'; cells[info.r][info.c - 1].classList.add('definition'); gridLogic[info.r][info.c - 1] = 'DEF'; defPlaced = true; }
+                    }
+                }
+            });
+        }
+
+        function exportToDigital() {
+            clearNewHighlights(); syncLogicFromDOM();
+            let minR = rows - 1, maxR = 0, minC = cols - 1, maxC = 0; let hasContent = false;
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    if(gridLogic[r][c] !== '' && gridLogic[r][c] !== 'BLK') {
+                        if(r < minR) minR = r; if(r > maxR) maxR = r; if(c < minC) minC = c; if(c > maxC) maxC = c; hasContent = true;
+                    }
+                }
+            }
+            if(hasContent) {
+                minR = Math.max(0, minR - 1); maxR = Math.min(rows - 1, maxR + 1); minC = Math.max(0, minC - 1); maxC = Math.min(cols - 1, maxC + 1);
+            } else { minR = 0; maxR = rows - 1; minC = 0; maxC = cols - 1; }
+            
+            let exportCols = maxC - minC + 1; let exportRows = maxR - minR + 1;
+
+            let gameHTML = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>התשחץ הדיגיטלי</title>
+<style>
+    body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; }
+    h1 { color: #333; font-size: 22px; text-align: center; margin-bottom: 10px;}
+    #defBanner { width: 100%; max-width: 800px; background-color: #007bff; color: white; text-align: center; padding: 15px 10px; font-size: 18px; font-weight: bold; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; min-height: 55px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background-color 0.3s;}
+    .grid-wrapper { width: 100%; max-width: 95vw; overflow-x: auto; text-align: center; direction: rtl; padding-bottom: 10px;}
+    .grid { display: inline-grid; grid-template-columns: repeat(${exportCols}, 40px); grid-template-rows: repeat(${exportRows}, 40px); background-color: transparent; border-top: 2px solid #000; border-right: 2px solid #000; width: max-content; touch-action: manipulation; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: right;}
+    .cell { background-color: #fff; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 20px; box-sizing: border-box; position: relative; overflow: hidden; border-bottom: 2px solid #000; border-left: 2px solid #000; height: 40px; width: 40px; transition: background-color 0.2s;}
+    .cell.black { background-color: #333 !important; }
+    .cell.def { background-color: #e2e8f0 !important; font-size: 10px; line-height: 1.1; text-align: center; padding: 2px; flex-direction: column; cursor: pointer;}
+    .cell.highlighted { background-color: #cce5ff; } .cell.active-cell { background-color: #fff3cd; }
+    input.letter { width: 100%; height: 100%; border: none; text-align: center; font-weight: bold; font-size: 20px; background: transparent; padding: 0; outline: none; border-radius: 0; color: #333; cursor: pointer;}
+    input.letter:focus { background-color: transparent; } 
+    input.letter.correct { color: #0f5132; background-color: #d1e7dd; } input.letter.wrong { color: #842029; background-color: #f8d7da; }
+    .toolbar { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; padding-bottom: 30px;}
+    button { padding: 12px 20px; font-size: 16px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+    button.check { background-color: #28a745; color: white; } button.reveal { background-color: #ffc107; color: #333; }
+</style>
+</head>
+<body>
+    <h1>תשחץ אינטראקטיבי</h1>
+    <div id="defBanner">גע במשבצת כדי לפתור</div>
+    <div class="grid-wrapper"><div class="grid">`;
+
+            for(let r = minR; r <= maxR; r++){
+                for(let c = minC; c <= maxC; c++){
+                    let relR = r - minR; let relC = c - minC;
+                    if(gridLogic[r][c] === 'BLK') { gameHTML += `<div class="cell black" data-r="${relR}" data-c="${relC}"></div>`; } 
+                    else if(gridLogic[r][c] === 'DEF') {
+                        let originalText = cells[r][c].innerText;
+                        let textForDisplay = originalText.replace(/\n/g, '<br>');
+                        let textForBanner = originalText.replace(/\n/g, ' ').replace(/"/g, '&quot;');
+                        gameHTML += `<div class="cell def" onclick="showDef('${textForBanner}')" data-r="${relR}" data-c="${relC}">${textForDisplay}</div>`;
+                    } else {
+                        let ans = gridLogic[r][c] || '';
+                        if (ans !== '') gameHTML += `<div class="cell"><input type="text" maxlength="1" class="letter" data-ans="${ans}" data-r="${relR}" data-c="${relC}"></div>`;
+                        else gameHTML += `<div class="cell" data-r="${relR}" data-c="${relC}"></div>`;
+                    }
+                }
+            }
+
+            gameHTML += `</div></div>
+    <div class="toolbar">
+        <button class="check" onclick="checkAnswers()">✔️ בדוק תשובות</button>
+        <button class="reveal" onclick="revealAll()">👀 גלה פתרון</button>
+    </div>
+    <script>
+        const inputs = document.querySelectorAll('input.letter');
+        const gridMap = []; let maxR = 0, maxC = 0;
+        inputs.forEach(input => {
+            const r = parseInt(input.getAttribute('data-r')); const c = parseInt(input.getAttribute('data-c'));
+            if (!gridMap[r]) gridMap[r] = []; gridMap[r][c] = input;
+            if (r > maxR) maxR = r; if (c > maxC) maxC = c;
+        });
+        let currentDir = 'horizontal'; 
+        function showDef(text) {
+            document.getElementById('defBanner').innerText = text; document.getElementById('defBanner').style.backgroundColor = '#17a2b8';
+            setTimeout(() => { document.getElementById('defBanner').style.backgroundColor = '#007bff'; }, 300);
+        }
+        function normalizeHebrew(str) { const map = {'ם':'מ', 'ן':'נ', 'ץ':'צ', 'ף':'פ', 'ך':'כ'}; return str.replace(/[םןץףך]/g, m => map[m]); }
+        function highlightWord(r, c, dir) {
+            document.querySelectorAll('.cell').forEach(cell => { cell.classList.remove('highlighted', 'active-cell'); });
+            if (!gridMap[r] || !gridMap[r][c]) return;
+            gridMap[r][c].parentElement.classList.add('active-cell');
+            let cellsToHighlight = [];
+            let i = dir === 'horizontal' ? c : r;
+            while(i >= 0) { let input = dir === 'horizontal' ? gridMap[r]?.[i] : gridMap[i]?.[c]; if (!input) break; cellsToHighlight.push(input.parentElement); i--; }
+            i = (dir === 'horizontal' ? c : r) + 1;
+            while(i <= (dir === 'horizontal' ? maxC : maxR)) { let input = dir === 'horizontal' ? gridMap[r]?.[i] : gridMap[i]?.[c]; if (!input) break; cellsToHighlight.push(input.parentElement); i++; }
+            cellsToHighlight.forEach(cell => { if(!cell.classList.contains('active-cell')) { cell.classList.add('highlighted'); } });
+        }
+        inputs.forEach((input) => {
+            input.addEventListener('click', function(e) {
+                const r = parseInt(this.getAttribute('data-r')); const c = parseInt(this.getAttribute('data-c'));
+                if (this.dataset.focused === 'true') { currentDir = currentDir === 'horizontal' ? 'vertical' : 'horizontal'; }
+                inputs.forEach(i => i.dataset.focused = 'false'); this.dataset.focused = 'true'; highlightWord(r, c, currentDir);
+            });
+            input.addEventListener('focus', function() { const r = parseInt(this.getAttribute('data-r')); const c = parseInt(this.getAttribute('data-c')); highlightWord(r, c, currentDir); });
+            input.addEventListener('blur', function() { this.dataset.focused = 'false'; });
+            input.addEventListener('input', function(e) {
+                this.classList.remove('correct', 'wrong'); this.parentElement.classList.remove('correct', 'wrong');
+                if (this.value.length === 1) {
+                    const r = parseInt(this.getAttribute('data-r')); const c = parseInt(this.getAttribute('data-c'));
+                    let nextInput = currentDir === 'horizontal' ? gridMap[r]?.[c - 1] : gridMap[r + 1]?.[c]; if (nextInput) nextInput.focus();
+                }
+            });
+            input.addEventListener('keydown', function(e) {
+                const r = parseInt(this.getAttribute('data-r')); const c = parseInt(this.getAttribute('data-c'));
+                if (e.key === 'Backspace' && this.value === '') { let prevInput = currentDir === 'horizontal' ? gridMap[r]?.[c + 1] : gridMap[r - 1]?.[c]; if (prevInput) { prevInput.focus(); prevInput.value = ''; } } 
+                else if (e.key === 'ArrowRight') { e.preventDefault(); let target = gridMap[r]?.[c - 1]; if(target) { currentDir = 'horizontal'; target.focus(); } } 
+                else if (e.key === 'ArrowLeft') { e.preventDefault(); let target = gridMap[r]?.[c + 1]; if(target) { currentDir = 'horizontal'; target.focus(); } } 
+                else if (e.key === 'ArrowUp') { e.preventDefault(); let target = gridMap[r - 1]?.[c]; if(target) { currentDir = 'vertical'; target.focus(); } } 
+                else if (e.key === 'ArrowDown') { e.preventDefault(); let target = gridMap[r + 1]?.[c]; if(target) { currentDir = 'vertical'; target.focus(); } }
+            });
+        });
+        function checkAnswers() {
+            let allCorrect = true; let filled = 0;
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    filled++; let userVal = normalizeHebrew(input.value.trim());
+                    if (userVal === input.getAttribute('data-ans')) { input.classList.add('correct'); input.classList.remove('wrong'); } 
+                    else { input.classList.add('wrong'); input.classList.remove('correct'); allCorrect = false; }
+                }
+            });
+            if (filled === inputs.length && allCorrect) { alert("כל הכבוד! פתרת את התשחץ בהצלחה מוחלטת!"); }
+        }
+        function revealAll() { if(confirm("בטוח שאתה רוצה לגלות את כל התשובות?")) { inputs.forEach(input => { input.value = input.getAttribute('data-ans'); input.classList.remove('wrong'); input.classList.add('correct'); }); } }
+    <\/script>
+</body>
+</html>`;
+            const blob = new Blob([gameHTML], { type: 'text/html' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = 'play_tashbetz.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        loadDB(); initGrid();
+    </script>
+</body>
+</html>
