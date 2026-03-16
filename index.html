@@ -33,8 +33,6 @@
         .btn-red { background-color: #dc3545; }
         .btn-dark { background-color: #343a40; }
         .btn-outline { background-color: transparent; border: 1px solid #6c757d; color: #6c757d;}
-        .btn-gold { background-color: #ffc107; color: #000; border: 1px solid #d39e00; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 16px;}
-        .btn-gold:hover { background-color: #e0a800; }
         
         .cell-editor { background: #e8f4f8; border: 1px solid #bce8f1; padding: 15px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
         .cell-editor textarea { height: 40px; margin-bottom: 0; flex: 2; min-width: 200px;}
@@ -78,17 +76,6 @@
         .btn-edit { background-color: #ffc107; color: #000; }
         .btn-delete { background-color: #dc3545; color: #fff; }
 
-        @media (max-width: 768px) {
-            .flex-row { flex-direction: column; }
-            .panel-box { padding: 10px; }
-            .btn-group { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
-            .btn-group button { flex: 1; min-width: 45%; }
-            .grid-wrapper { justify-content: flex-start; padding: 0 10px;} 
-            .dict-stats { flex-direction: column; gap: 10px; text-align: center;}
-            .suggestion-item { flex-direction: column; align-items: flex-start; }
-            .suggestion-item button { width: 100%; margin-top: 5px; }
-        }
-
         @media print {
             body { background-color: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .tabs, .controls, .panel-box, #suggestionsPanel, .cell-editor { display: none !important; }
@@ -115,13 +102,13 @@
         
         <div class="panel-box">
             <div class="panel-title">1. הזרקת מילות שלד (עוגנים)</div>
-            <p style="font-size: 13px; color: #555; margin-top: 0;">הקלד מילים להזרקה (מופרדות בפסיקים). ניתן לבחור מההצעות, או לכתוב מילים חדשות.</p>
+            <p style="font-size: 13px; color: #555; margin-top: 0;">הקלד מילים להזרקה (מופרדות בפסיקים). ניתן לבחור מההצעות, או לכתוב מילים חדשות. כולן יינעצו בלוח.</p>
             <div class="flex-row">
                 <div class="autocomplete-wrapper">
                     <input type="text" id="directWordInput" placeholder="הקלד מילה, או רשימת מילים עם פסיק..." autocomplete="off">
                     <div id="autocompleteList" class="autocomplete-items"></div>
                 </div>
-                <button class="btn-theme" onclick="injectDirectWords()" style="white-space: nowrap; height: 40px; width: 100%;">הכנס ונעץ בלוח 📌</button>
+                <button class="btn-theme" onclick="injectDirectWords()" style="white-space: nowrap; height: 40px;">הכנס ונעץ בלוח 📌</button>
             </div>
         </div>
 
@@ -183,13 +170,14 @@
             <div id="grid"></div>
         </div>
         
-        <div class="panel-box btn-group">
-            <button class="btn-green" onclick="addRow(true)">⬆️ שורה</button>
-            <button class="btn-green" onclick="addRow(false)">⬇️ שורה</button>
-            <button class="btn-green" onclick="addCol(true)">➡️ עמודה</button>
-            <button class="btn-green" onclick="addCol(false)">⬅️ עמודה</button>
-            <button class="btn-outline" style="width: 100%;" onclick="printEmpty()">🖨️ הדפס PDF</button>
-            <button style="background-color: #20c997; color: white; width: 100%; border:none; border-radius:5px; padding:10px; font-weight:bold;" onclick="exportToDigital()">📱 ייצא משחק דיגיטלי לטלפון</button>
+        <div class="panel-box" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+            <button class="btn-green" onclick="addRow(true)">⬆️</button>
+            <button class="btn-green" onclick="addRow(false)">⬇️</button>
+            <button class="btn-green" onclick="addCol(true)">➡️</button>
+            <button class="btn-green" onclick="addCol(false)">⬅️</button>
+            <span style="border-left: 2px solid #ccc; margin: 0 5px;"></span>
+            <button class="btn-outline" onclick="printEmpty()">🖨️ הדפס PDF</button>
+            <button style="background-color: #20c997; color: white; border:none; border-radius:5px; padding:10px 15px; font-weight:bold; cursor:pointer;" onclick="exportToDigital()">📱 ייצא משחק דיגיטלי לטלפון</button>
             <button class="btn-outline" onclick="saveState()">💾 שמור לוח</button>
             <button class="btn-outline" onclick="loadState()">📂 טען לוח</button>
             <button class="btn-red" onclick="clearGrid()">🗑️ נקה לוח</button>
@@ -199,13 +187,6 @@
 
     <div id="tab-dictionary" class="tab-content">
         <h1>מנהל המאגר</h1>
-        
-        <div id="starterPackDiv" style="width: 100%; text-align: center; margin-bottom: 20px; display: none;">
-            <button class="btn-gold" style="width: 100%; padding: 15px;" onclick="loadStarterPack()">
-                🎁 המאגר שלך ריק! לחץ כאן לטעינת "חבילת בסיס" של מילות דבק (מומלץ לנייד)
-            </button>
-        </div>
-
         <div class="dict-stats">
             <span id="stat-total">סה"כ מילים: 0</span>
             <span id="stat-avg">ציון ממוצע: 0</span>
@@ -298,41 +279,7 @@
         }
 
         function saveDB() { localStorage.setItem('crosswordSmartDB', JSON.stringify(smartDB)); updateDictUI(); }
-        
-        function loadDB() { 
-            const data = localStorage.getItem('crosswordSmartDB'); 
-            if(data) {
-                smartDB = JSON.parse(data); 
-            }
-            updateDictUI(); 
-            
-            // מציג את כפתור התנעת המאגר אם הוא ריק לגמרי
-            if(Object.keys(smartDB).length === 0) {
-                document.getElementById('starterPackDiv').style.display = 'block';
-            } else {
-                document.getElementById('starterPackDiv').style.display = 'none';
-            }
-        }
-
-        // טעינת חבילת מילות דבק למובייל בלחיצת כפתור
-        function loadStarterPack() {
-            const baseWords = [
-                "את","של","על","עם","גם","פה","שם","כן","לא","אם","אז","רק","עד","מי","מה","לו","לה","הם","הן","אנו","אני","הוא","היא",
-                "גן","דף","דג","הר","ים","עץ","פר","קן","תו","שיר","סוס","פיל","דוב","כוס","כדור","מים","שמיים","ארץ","שמש","ירח","אור",
-                "צל","יום","לילה","בוקר","ערב","מחר","אתמול","שנה","חודש","שבוע","רגע","דקה","שעה","זמן","אמת","שקר","טוב","רע","יפה",
-                "חם","קר","אדום","כחול","ירוק","צהוב","שחור","לבן","גדול","קטן","רב","מעט","כל","שום","שוב","עוד","כבר","תמיד","אף",
-                "כך","איך","איפה","מתי","למה","מדוע","כמה","כי","אשר","אבל","אך","אולם","או","בין","בתוך","תחת","מעל","מחוץ","פנים",
-                "חוץ","קדם","אחר","אחרי","לפני","אחור","קדימה","אחורה","ימין","שמאל","למעלה","למטה","צפון","דרום","מזרח","מערב"
-            ];
-            
-            let count = 0;
-            baseWords.forEach(w => {
-                if(insertToDB(w, "מילת בסיס (הוזנה אוטומטית)", "מילות דבק")) count++;
-            });
-            
-            saveDB();
-            alert(`איזה יופי! נטענו ${count} מילות בסיס שיעזרו לך לבנות תשחצים. עכשיו תוכל להתחיל לעבוד מהטלפון.`);
-        }
+        function loadDB() { const data = localStorage.getItem('crosswordSmartDB'); if(data) smartDB = JSON.parse(data); updateDictUI(); }
 
         function insertToDB(originalWord, def, category) {
             originalWord = originalWord.trim();
@@ -382,6 +329,7 @@
         }
 
         function clearEntireDatabase() { if(confirm("בטוח? הפעולה תמחק את כל המילים ששמרת!")) { smartDB = {}; saveDB(); } }
+
         function deleteWord(cWord) { if(confirm(`למחוק את המילה "${smartDB[cWord].original}"?`)) { delete smartDB[cWord]; saveDB(); } }
 
         function openEditModal(cWord) {
@@ -445,15 +393,9 @@
             }
 
             let currentFilter = filterDropdown.value;
-            filterDropdown.innerHTML = '<option value="ALL">מכל הקטגוריות</option>';
+            filterDropdown.innerHTML = '<option value="ALL">מכל הקטגוריות במאגר</option>';
             categories.forEach(c => { let opt = document.createElement('option'); opt.value = c; opt.innerText = c; filterDropdown.appendChild(opt); });
             if(categories.has(currentFilter)) filterDropdown.value = currentFilter;
-            
-            if(Object.keys(smartDB).length === 0) {
-                document.getElementById('starterPackDiv').style.display = 'block';
-            } else {
-                document.getElementById('starterPackDiv').style.display = 'none';
-            }
         }
 
         function switchTab(tabId) {
@@ -463,7 +405,7 @@
         }
 
 
-        // ================== מנוע חיפוש (Autocomplete) מותאם לפסיקים ==================
+        // ================== מנוע חיפוש (Autocomplete) מתוקן לפסיקים ==================
         const directInput = document.getElementById('directWordInput');
         const autoList = document.getElementById('autocompleteList');
 
@@ -586,7 +528,7 @@
             i = (dir === 'horizontal' ? c : r) + 1;
             while(i < (dir === 'horizontal' ? cols : rows)) { let cell = dir === 'horizontal' ? cells[r][i] : cells[i][c]; if (cell.classList.contains('black') || cell.classList.contains('definition')) break; currentHighlightedCells.push(cell); i++; }
 
-            currentHighlightedCells.sort((a,b) => { let pA = getCellCoords(a); let pB = getCellCoords(b); return dir === 'horizontal' ? pA.c - pB.c : pA.r - pB.r; });
+            currentHighlightedCells.sort((a,b) => { let pA = getCellCoords(a); let pB = getCellCoords(b); return dir === 'horizontal' ? pB.c - pA.c : pA.r - pB.r; });
             currentHighlightedCells.forEach(cell => { if(!cell.classList.contains('active-cell')) cell.classList.add('highlighted'); });
         }
 
@@ -612,10 +554,10 @@
             const panel = document.getElementById('suggestionsPanel'); const list = document.getElementById('suggestionsList'); const title = document.getElementById('suggestionsTitle');
             list.innerHTML = '';
             let patDisp = patternStr.replace('^','').replace('$','').replace(/\./g, '_').split('').join(' ');
-            title.innerText = `מנתח החללים מחפש תבנית: [ ${patDisp} ]`;
+            title.innerText = `מנתח החללים מצא התאמות לתבנית: [ ${patDisp} ]`;
 
             if (matches.length === 0) { 
-                list.innerHTML = `<p>לא נמצאו מילים במאגר שמתאימות לתבנית זו.</p>`; 
+                list.innerHTML = `<p>לא נמצאו מילים שמתאימות לתבנית.</p>`; 
             } else {
                 matches.sort((a,b) => {
                     if (b.score !== a.score) return b.score - a.score;
@@ -627,7 +569,14 @@
                     item.innerHTML = `<div><span class="suggestion-word">${sugg.original}</span><span class="score-badge">ציון: ${sugg.score}</span></div>`;
                     const btn = document.createElement('button'); btn.className = 'btn-dark'; btn.style.padding = '5px 10px'; btn.style.fontSize = '12px'; btn.innerText = 'הזרק לחלל!';
                     
-                    btn.onclick = function() { injectToHighlighted(sugg.original, sugg.def); };
+                    btn.onclick = function() { 
+                        let cWord = cleanWord(sugg.original);
+                        currentHighlightedCells.forEach((cell, idx) => { cell.innerText = cWord[idx]; cell.classList.add('locked'); });
+                        let p = getCellCoords(currentHighlightedCells[0]);
+                        placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
+                        let dict = {}; dict[cWord] = sugg.def; placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
+                        panel.style.display = 'none'; currentHighlightedCells.forEach(c => c.classList.add('just-added'));
+                    };
                     item.appendChild(btn); list.appendChild(item);
                 });
             }
@@ -645,23 +594,6 @@
             panel.style.display = 'block';
         }
 
-        function injectToHighlighted(originalWord, def) {
-            let cWord = cleanWord(originalWord);
-            currentHighlightedCells.forEach((cell, idx) => {
-                cell.innerText = cWord[idx];
-                cell.classList.add('locked'); 
-            });
-            
-            let p = getCellCoords(currentHighlightedCells[0]);
-            placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
-            let dict = {}; dict[cWord] = def; 
-            placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
-            
-            document.getElementById('suggestionsPanel').style.display = 'none'; 
-            currentHighlightedCells.forEach(c => c.classList.add('just-added'));
-            saveState();
-        }
-
         function forceInjectToSlot() {
             let val = document.getElementById('manualSlotInput').value.trim();
             let cWord = cleanWord(val);
@@ -669,7 +601,14 @@
                 return alert(`המילה חייבת להיות בדיוק בת ${currentHighlightedCells.length} אותיות!`);
             }
             if(!smartDB[cWord]) insertToDB(val, "", "הוזן ידנית ללוח");
-            injectToHighlighted(val, smartDB[cWord] ? smartDB[cWord].def : "");
+            
+            currentHighlightedCells.forEach((cell, idx) => { cell.innerText = cWord[idx]; cell.classList.add('locked'); });
+            let p = getCellCoords(currentHighlightedCells[0]);
+            placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
+            let dict = {}; dict[cWord] = smartDB[cWord] ? smartDB[cWord].def : ""; 
+            placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
+            document.getElementById('suggestionsPanel').style.display = 'none'; 
+            currentHighlightedCells.forEach(c => c.classList.add('just-added'));
         }
 
         function toggleBlackBlock(r, c, forceBlack = null) {
@@ -717,7 +656,7 @@
                 }
             }
             if(errors > 0) {
-                alert(`⚠️ נמצאו אזורים מתים (רווח של משבצת בודדת). לא קיימת מילה בעברית של אות 1. לחץ על "תקן חורים" כדי לחסום אותם.`);
+                alert(`⚠️ נמצאו אזורים מתים (רווח של משבצת בודדת). לחץ על "תקן חורים" כדי לחסום אותם.`);
                 document.getElementById('btnAutoFix').style.display = 'inline-block';
             } else {
                 alert("✅ הלוח נקי! אין חללים של משבצת בודדת.");
@@ -847,7 +786,7 @@
             return { valid: true, intersections: intersections };
         }
 
-        // הזרקה חכמה רב-שלבית לפסיקים
+        // --- תיקון: הזרקה חכמה רב-שלבית לפסיקים ---
         function injectDirectWords() {
             clearNewHighlights(); syncLogicFromDOM();
             const inputField = document.getElementById('directWordInput');
@@ -858,6 +797,7 @@
 
             const newWords = text.split(/[\n,]+/).map(w => w.trim()).filter(w => w.length > 0);
             
+            // מכניס למאגר קודם
             newWords.forEach(originalWord => {
                 let cWord = cleanWord(originalWord);
                 if (cWord.length > 1 && !smartDB[cWord]) {
@@ -865,6 +805,7 @@
                 }
             });
 
+            // מנסה לשבץ בגלים (כדי לאפשר להם להתחבר)
             let wordsToPlace = newWords.map(w => cleanWord(w)).filter(w => w.length > 1 && !placedWordsInfo.some(info => info.word === w));
             if (wordsToPlace.length === 0) { inputField.value = ''; return; }
 
@@ -919,7 +860,7 @@
             }
         }
 
-        // מילוי לוח אוטומטי (AutoFill מלא)
+        // --- מילוי לוח אוטומטי (AutoFill מלא) ---
         function generateCrossword() {
             clearNewHighlights(); syncLogicFromDOM();
             let filterCat = document.getElementById('activeCategoryFilter').value;
@@ -987,11 +928,11 @@
                 placedWordsInfo.forEach(info => { if(smartDB[info.word]) dictForPlacement[info.word] = smartDB[info.word].def; });
                 placeDefinitions(placedWordsInfo, dictForPlacement);
             } else {
-                alert("לא הצלחנו לשבץ מילים נוספות בלוח הקיים. נסה להוסיף מילות דבק (2-3 אותיות) למאגר.");
+                alert("לא הצלחנו לשבץ מילים נוספות. נסה להוסיף מילות דבק למאגר.");
             }
         }
 
-        // הצע מילים (יועץ)
+        // --- הצע מילים (יועץ) ---
         function suggestQualityWords() {
             clearNewHighlights(); syncLogicFromDOM();
             let filterCat = document.getElementById('activeCategoryFilter').value;
@@ -1036,6 +977,7 @@
                 item.innerHTML = `<div><span class="suggestion-word">${sugg.original}</span><span class="score-badge">ציון: ${sugg.score}</span><span style="font-size:11px; color:#999; margin-right:15px;">(${sugg.isH ? 'מאוזן' : 'מאונך'}, ${overlapText})</span></div>`;
                 const btn = document.createElement('button'); btn.className = 'btn-green'; btn.style.padding = '5px 10px'; btn.style.fontSize = '12px'; btn.innerText = 'שבץ אותי!';
                 
+                // התיקון הקריטי: שבץ אותי דוחף ללוח
                 btn.onclick = function() {
                     for (let j = 0; j < sugg.word.length; j++) {
                         let currR = sugg.isH ? sugg.r : sugg.r + j; let currC = sugg.isH ? sugg.c + j : sugg.c;
