@@ -33,6 +33,8 @@
         .btn-red { background-color: #dc3545; }
         .btn-dark { background-color: #343a40; }
         .btn-outline { background-color: transparent; border: 1px solid #6c757d; color: #6c757d;}
+        .btn-gold { background-color: #ffc107; color: #000; border: 1px solid #d39e00; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 16px;}
+        .btn-gold:hover { background-color: #e0a800; }
         
         .cell-editor { background: #e8f4f8; border: 1px solid #bce8f1; padding: 15px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
         .cell-editor textarea { height: 40px; margin-bottom: 0; flex: 2; min-width: 200px;}
@@ -76,6 +78,17 @@
         .btn-edit { background-color: #ffc107; color: #000; }
         .btn-delete { background-color: #dc3545; color: #fff; }
 
+        @media (max-width: 768px) {
+            .flex-row { flex-direction: column; }
+            .panel-box { padding: 10px; }
+            .btn-group { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+            .btn-group button { flex: 1; min-width: 45%; }
+            .grid-wrapper { justify-content: flex-start; padding: 0 10px;} 
+            .dict-stats { flex-direction: column; gap: 10px; text-align: center;}
+            .suggestion-item { flex-direction: column; align-items: flex-start; }
+            .suggestion-item button { width: 100%; margin-top: 5px; }
+        }
+
         @media print {
             body { background-color: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .tabs, .controls, .panel-box, #suggestionsPanel, .cell-editor { display: none !important; }
@@ -87,7 +100,8 @@
             .cell.locked::after { display: none !important; }
         }
 
-        #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 15px;}
+        /* מודאלים כלליים */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box;}
         .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); box-sizing: border-box; }
     </style>
 </head>
@@ -102,13 +116,13 @@
         
         <div class="panel-box">
             <div class="panel-title">1. הזרקת מילות שלד (עוגנים)</div>
-            <p style="font-size: 13px; color: #555; margin-top: 0;">הקלד מילים להזרקה (מופרדות בפסיקים). ניתן לבחור מההצעות, או לכתוב מילים חדשות. כולן יינעצו בלוח.</p>
+            <p style="font-size: 13px; color: #555; margin-top: 0;">הקלד מילים להזרקה (מופרדות בפסיקים). ניתן לבחור מההצעות, או לכתוב מילים חדשות.</p>
             <div class="flex-row">
                 <div class="autocomplete-wrapper">
                     <input type="text" id="directWordInput" placeholder="הקלד מילה, או רשימת מילים עם פסיק..." autocomplete="off">
                     <div id="autocompleteList" class="autocomplete-items"></div>
                 </div>
-                <button class="btn-theme" onclick="injectDirectWords()" style="white-space: nowrap; height: 40px;">הכנס ונעץ בלוח 📌</button>
+                <button class="btn-theme" onclick="injectDirectWords()" style="white-space: nowrap; height: 40px; width: 100%;">הכנס ונעץ בלוח 📌</button>
             </div>
         </div>
 
@@ -121,13 +135,17 @@
                 </label>
                 <div style="border-right: 2px solid #ccc; height: 20px; display: none;"></div>
                 <button class="btn-red" style="padding: 5px 10px; font-size: 13px;" onclick="runHeatmap()">🔥 סרוק מפת חום</button>
-                <button id="btnAutoFix" class="btn-dark" style="padding: 5px 10px; font-size: 13px; display: none;" onclick="autoFixHeatmap()">🛠️ תקן חורים</button>
+                
+                <button class="btn-outline" style="padding: 5px 10px; font-size: 13px; color: #dc3545; border-color: #dc3545;" onclick="clearHighlightedSlot()">🗑️ מחק מילה מסומנת</button>
                 <span style="font-size: 12px; color: #666; width: 100%;">💡 קליק ימני נועל משבצת (📌) | דאבל קליק להשחרה.</span>
             </div>
 
             <div class="cell-editor" id="cellEditorPanel">
-                <div style="font-weight: bold; color: #0c5460; width: 100%;">עורך הגדרות (בחר משבצת בלוח):</div>
-                <textarea id="ceText" placeholder="הקלד פה את ההגדרה..." oninput="updateActiveCellFromPanel()"></textarea>
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="font-weight: bold; color: #0c5460;">עורך הגדרות (בחר משבצת בלוח):</div>
+                    <button class="btn-purple" style="padding: 5px 10px; font-size: 12px;" onclick="openWikiModal()">✨ חולל הגדרה מהרשת (ויקי-סוכן)</button>
+                </div>
+                <textarea id="ceText" placeholder="הקלד פה את ההגדרה (או השתמש בויקי-סוכן)..." oninput="updateActiveCellFromPanel()"></textarea>
                 <div style="display: flex; gap: 5px; width: 100%;">
                     <select id="ceArrow1" onchange="updateActiveCellFromPanel()">
                         <option value="">ללא חץ 1</option>
@@ -163,6 +181,12 @@
 
         <div id="suggestionsPanel">
             <h3 id="suggestionsTitle">היועץ החכם מציע:</h3>
+            <div style="margin-bottom: 10px; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                <label style="font-size: 13px; cursor: pointer; font-weight: bold; color: #007bff;">
+                    <input type="checkbox" id="allowPartialSlots" checked> 
+                    אפשר הצעת מילים קצרות (יציב בלוק שחור אוטומטית בסוף המילה)
+                </label>
+            </div>
             <div id="suggestionsList"></div>
         </div>
 
@@ -170,23 +194,29 @@
             <div id="grid"></div>
         </div>
         
-        <div class="panel-box" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-            <button class="btn-green" onclick="addRow(true)">⬆️</button>
-            <button class="btn-green" onclick="addRow(false)">⬇️</button>
-            <button class="btn-green" onclick="addCol(true)">➡️</button>
-            <button class="btn-green" onclick="addCol(false)">⬅️</button>
-            <span style="border-left: 2px solid #ccc; margin: 0 5px;"></span>
-            <button class="btn-outline" onclick="printEmpty()">🖨️ הדפס PDF</button>
-            <button style="background-color: #20c997; color: white; border:none; border-radius:5px; padding:10px 15px; font-weight:bold; cursor:pointer;" onclick="exportToDigital()">📱 ייצא משחק דיגיטלי לטלפון</button>
+        <div class="panel-box btn-group">
+            <button class="btn-green" onclick="addRow(true)">⬆️ שורה</button>
+            <button class="btn-green" onclick="addRow(false)">⬇️ שורה</button>
+            <button class="btn-green" onclick="addCol(true)">➡️ עמודה</button>
+            <button class="btn-green" onclick="addCol(false)">⬅️ עמודה</button>
+            <button class="btn-outline" style="width: 100%;" onclick="printEmpty()">🖨️ הדפס PDF</button>
+            <button style="background-color: #20c997; color: white; width: 100%; border:none; border-radius:5px; padding:10px; font-weight:bold;" onclick="exportToDigital()">📱 ייצא משחק דיגיטלי לטלפון</button>
             <button class="btn-outline" onclick="saveState()">💾 שמור לוח</button>
             <button class="btn-outline" onclick="loadState()">📂 טען לוח</button>
-            <button class="btn-red" onclick="clearGrid()">🗑️ נקה לוח</button>
+            <button class="btn-red" onclick="clearGrid()">🗑️ נקה לוח רייק</button>
         </div>
     </div>
 
 
     <div id="tab-dictionary" class="tab-content">
         <h1>מנהל המאגר</h1>
+        
+        <div id="starterPackDiv" style="width: 100%; text-align: center; margin-bottom: 20px; display: none;">
+            <button class="btn-gold" style="width: 100%; padding: 15px;" onclick="loadStarterPack()">
+                🎁 המאגר שלך ריק! לחץ כאן לשאיבת המאגר המקצועי מהענן (יבוא 26 קבצים אוטומטית)
+            </button>
+        </div>
+
         <div class="dict-stats">
             <span id="stat-total">סה"כ מילים: 0</span>
             <span id="stat-avg">ציון ממוצע: 0</span>
@@ -196,7 +226,7 @@
         
         <div class="flex-row">
             <div class="panel-box flex-col" style="margin-bottom:0;">
-                <div class="panel-title">ייבוא מקבצים (TXT)</div>
+                <div class="panel-title">ייבוא מקבצים מהמחשב (TXT)</div>
                 <div style="display: flex; gap: 10px; flex-direction: column; margin-bottom: 10px;">
                     <input type="text" id="fileCatInput" placeholder="שם הקטגוריה (אופציונלי)">
                     <label style="font-size: 12px;">
@@ -210,7 +240,7 @@
 
             <div class="panel-box flex-col" style="margin-bottom:0;">
                 <div class="panel-title">הוספה ידנית</div>
-                <input type="text" id="addWordInput" placeholder="מילה">
+                <input type="text" id="addWordInput" placeholder="מילה (או עם רווחים: 'בת הים הקטנה')">
                 <input type="text" id="addDefInput" placeholder="הגדרה (אופציונלי)">
                 <input type="text" id="addCatInput" placeholder="קטגוריה">
                 <button class="btn-green" onclick="addWordsToDatabase()">➕ הוסף למאגר</button>
@@ -231,7 +261,7 @@
         </div>
     </div>
 
-    <div id="editModal">
+    <div id="editModal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top:0;">עריכת מושג</h3>
             <label>מילה מקורית:</label>
@@ -248,6 +278,23 @@
         </div>
     </div>
 
+    <div id="wikiModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:#6f42c1;">✨ ויקי-סוכן</h3>
+            <p style="font-size: 13px; color: #555;">הקלד ערך. אנו נשאב ונתמצת הגדרה מוויקיפדיה או ויקינתונים.</p>
+            <input type="text" id="wikiSearchTerm" placeholder="איזו מילה לחפש?" onkeyup="if(event.key === 'Enter') executeWikiSearch()">
+            <button class="btn-dark" style="width: 100%; margin-bottom: 15px;" onclick="executeWikiSearch()">🔍 חפש ותמצת</button>
+            
+            <label style="font-size: 13px; font-weight: bold;">תצוגה מקדימה (ניתן לערוך):</label>
+            <textarea id="wikiPreview" rows="4" placeholder="ההגדרה תופיע כאן..."></textarea>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                <button class="btn-outline" onclick="closeWikiModal()">ביטול</button>
+                <button class="btn-purple" onclick="applyWikiClue()">הזרק ללוח</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ================== מנוע המאגר (DB) ==================
         let smartDB = {}; 
@@ -257,6 +304,17 @@
             let str = word.replace(/\s+/g, '').trim(); 
             const finalsMap = {'ם':'מ', 'ן':'נ', 'ץ':'צ', 'ף':'פ', 'ך':'כ'}; 
             return str.replace(/[םןץףך]/g, match => finalsMap[match]);
+        }
+
+        // חישוב מילים מרובות והוספת (2, 3) להגדרה
+        function getWordLengthsStr(originalWord) {
+            let parts = originalWord.trim().split(/\s+/);
+            if(parts.length > 1) {
+                // סופר רק אותיות בעברית ואנגלית, מתעלם מפסיקים גרשיים וכו'
+                let lens = parts.map(p => p.replace(/[^א-תa-zA-Z]/g, '').length).filter(l => l > 0).join(', ');
+                if(lens) return ` (${lens})`;
+            }
+            return "";
         }
 
         function calculateCrosswordScore(cleanWordStr, originalWordStr) {
@@ -279,18 +337,89 @@
         }
 
         function saveDB() { localStorage.setItem('crosswordSmartDB', JSON.stringify(smartDB)); updateDictUI(); }
-        function loadDB() { const data = localStorage.getItem('crosswordSmartDB'); if(data) smartDB = JSON.parse(data); updateDictUI(); }
-
-        function insertToDB(originalWord, def, category) {
-            originalWord = originalWord.trim();
-            if (originalWord.length < 2) return false;
-            let cWord = cleanWord(originalWord);
+        
+        function loadDB() { 
+            const data = localStorage.getItem('crosswordSmartDB'); 
+            if(data) { smartDB = JSON.parse(data); }
+            updateDictUI(); 
             
+            if(Object.keys(smartDB).length === 0) {
+                document.getElementById('starterPackDiv').style.display = 'block';
+            } else {
+                document.getElementById('starterPackDiv').style.display = 'none';
+            }
+        }
+
+        async function loadStarterPack() {
+            const btn = document.querySelector('#starterPackDiv button');
+            const originalText = btn.innerText;
+            btn.innerText = "⏳ שואב אלפי מילים מהענן... נא להמתין...";
+            btn.disabled = true;
+
+            const repoBaseUrl = "https://yonathansharon.github.io/tashbetz/";
+            const filesToLoad = [
+                "glue_words_hebrew_crosswords.csv", "Glue_Words_4.txt", "Glue_Words_2.txt", "Glue_Words_3.txt", "Glue_Words_Golden_Words.txt", 
+                "זוכי פרס ישראל.txt", "זוכי פרס נובל אמריקאים וישראלים.txt", "ישובים.csv", "כדורגל.txt", "כדורסל.txt", "להקות רוק ישראליות.txt", 
+                "מדינות_ארצות_הברית.txt", "מושגים.txt", "מחזות שייקספיר.txt", "מלכי ישראל ויהודה.txt", "ספורט_כללי.txt", "ספרים וסופרים.txt", 
+                "ערי_בירה.txt", "ערים בעולם.txt", "IsraeliMivies.txt", "IsraeliSingers.txt", "IsraeliWriters.txt", "Kibutzim.txt", 
+                "MyWords 2.txt", "MyWords.txt", "prepositions.txt"
+            ];
+            
+            let totalAdded = 0; let filesLoaded = 0;
+
+            for (let fileName of filesToLoad) {
+                try {
+                    const url = repoBaseUrl + encodeURIComponent(fileName);
+                    const response = await fetch(url);
+                    if (!response.ok) continue; 
+                    const text = await response.text();
+
+                    let category = fileName.replace(/\.[^/.]+$/, ""); 
+                    const words = text.split(/[\n,\r\t]+/);
+                    let countForFile = 0;
+                    words.forEach(w => { if (insertToDB(w, "", category)) countForFile++; });
+                    totalAdded += countForFile; filesLoaded++;
+                } catch (err) { console.error("Failed to fetch: " + fileName); }
+            }
+
+            saveDB(); btn.innerText = originalText; btn.disabled = false;
+            if (totalAdded > 0) {
+                alert(`נשאבו ${totalAdded} מילים מתוך ${filesLoaded} קבצים ב-GitHub. המאגר מוכן לעבודה!`);
+                document.getElementById('starterPackDiv').style.display = 'none';
+            } else {
+                alert("אופס, לא הצלחנו למשוך את המילים. ודא שהעלית את כל הקבצים ל-GitHub בדיוק בשמות שרשמת לי.");
+            }
+        }
+
+        // מנקה הויקיפדיה + הוספת (2, 3) למילים מרובות
+        function insertToDB(originalLine, def, category) {
+            let originalWord = originalLine.trim();
+            if (originalWord.length < 2) return false;
+            
+            let autoDef = def || "";
+            const parenMatch = originalWord.match(/\(([^)]+)\)/);
+            if (parenMatch) {
+                autoDef = parenMatch[1].trim(); 
+                originalWord = originalWord.replace(/\s*\([^)]+\)\s*/g, '').trim(); 
+            }
+
+            let cWord = cleanWord(originalWord);
             let skipLong = document.getElementById('skipLongWords') ? document.getElementById('skipLongWords').checked : false;
             if(skipLong && originalWord.split(/\s+/).length > 3) return false;
 
+            // הוספת אורכי המילים בסוגריים להגדרה (אם המילה מורכבת מרווחים)
+            let lengthsStr = getWordLengthsStr(originalWord);
+            if (lengthsStr !== "" && !autoDef.includes(lengthsStr)) {
+                autoDef += lengthsStr;
+            }
+
             if (!smartDB[cWord]) {
-                smartDB[cWord] = { original: originalWord, def: def || `הגדרה ל-${originalWord}`, category: category || "כללי", score: calculateCrosswordScore(cWord, originalWord) };
+                smartDB[cWord] = { 
+                    original: originalWord, 
+                    def: autoDef || `הגדרה ל-${originalWord}`, 
+                    category: category || "כללי", 
+                    score: calculateCrosswordScore(cWord, originalWord) 
+                };
                 return true;
             }
             return false;
@@ -329,7 +458,6 @@
         }
 
         function clearEntireDatabase() { if(confirm("בטוח? הפעולה תמחק את כל המילים ששמרת!")) { smartDB = {}; saveDB(); } }
-
         function deleteWord(cWord) { if(confirm(`למחוק את המילה "${smartDB[cWord].original}"?`)) { delete smartDB[cWord]; saveDB(); } }
 
         function openEditModal(cWord) {
@@ -393,9 +521,15 @@
             }
 
             let currentFilter = filterDropdown.value;
-            filterDropdown.innerHTML = '<option value="ALL">מכל הקטגוריות במאגר</option>';
+            filterDropdown.innerHTML = '<option value="ALL">מכל הקטגוריות</option>';
             categories.forEach(c => { let opt = document.createElement('option'); opt.value = c; opt.innerText = c; filterDropdown.appendChild(opt); });
             if(categories.has(currentFilter)) filterDropdown.value = currentFilter;
+            
+            if(Object.keys(smartDB).length === 0) {
+                document.getElementById('starterPackDiv').style.display = 'block';
+            } else {
+                document.getElementById('starterPackDiv').style.display = 'none';
+            }
         }
 
         function switchTab(tabId) {
@@ -405,31 +539,18 @@
         }
 
 
-        // ================== מנוע חיפוש (Autocomplete) מתוקן לפסיקים ==================
+        // ================== מנוע חיפוש ריילי ==================
         const directInput = document.getElementById('directWordInput');
         const autoList = document.getElementById('autocompleteList');
 
         directInput.addEventListener('input', function() {
-            let val = this.value; 
-            let terms = val.split(',');
-            let currentTerm = terms[terms.length - 1].trim().toLowerCase();
-            autoList.innerHTML = '';
-            
+            let val = this.value; let terms = val.split(','); let currentTerm = terms[terms.length - 1].trim().toLowerCase(); autoList.innerHTML = '';
             if (currentTerm.length < 2) return;
-            
-            let matches = Object.values(smartDB).filter(entry => 
-                entry.original.toLowerCase().includes(currentTerm) || cleanWord(entry.original).includes(currentTerm)
-            );
-            
+            let matches = Object.values(smartDB).filter(entry => entry.original.toLowerCase().includes(currentTerm) || cleanWord(entry.original).includes(currentTerm));
             matches.slice(0, 10).forEach(match => {
                 let div = document.createElement('div');
                 div.innerHTML = `<strong>${match.original}</strong> <span class="autocomplete-cat">(${match.category})</span>`;
-                div.addEventListener('click', function() { 
-                    terms[terms.length - 1] = " " + match.original;
-                    directInput.value = terms.join(',').trim() + ", "; 
-                    autoList.innerHTML = ''; 
-                    directInput.focus();
-                });
+                div.addEventListener('click', function() { terms[terms.length - 1] = " " + match.original; directInput.value = terms.join(',').trim() + ", "; autoList.innerHTML = ''; directInput.focus(); });
                 autoList.appendChild(div);
             });
         });
@@ -518,6 +639,141 @@
             syncPanelWithCell(null);
         }
 
+        // כפתור מחיקת מילה מסומנת מהלוח!
+        function clearHighlightedSlot() {
+            if(currentHighlightedCells.length === 0) return alert("סמן קודם מילה או חלל בלוח שתרצה לנקות.");
+            if(confirm("בטוח שתרצה למחוק את כל האותיות המסומנות בצהוב?")) {
+                currentHighlightedCells.forEach(cell => {
+                    cell.innerText = '';
+                    cell.classList.remove('locked', 'just-added', 'definition', 'heatmap-error');
+                    let coords = getCellCoords(cell);
+                    gridLogic[coords.r][coords.c] = '';
+                });
+                
+                // מנקה גם מרישום המילים ששובצו, כדי שמנוע האוטופיל ידע שהמקום שוב פנוי
+                if (currentHighlightedCells.length > 0) {
+                    let startCoords = getCellCoords(currentHighlightedCells[0]);
+                    placedWordsInfo = placedWordsInfo.filter(info => {
+                        return !(info.r === startCoords.r && info.c === startCoords.c && info.isHorizontal === (currentDir === 'horizontal'));
+                    });
+                }
+                saveState(); // שומר את הלוח הנקי בזיכרון
+            }
+        }
+
+
+        // ================== מודאל ויקי-סוכן משודרג ==================
+        function openWikiModal() {
+            if(!activeCell) return alert("לחץ קודם על המשבצת הריקה בלוח שתרצה להפוך להגדרה.");
+            
+            let prefillWord = "";
+            let {r, c} = getCellCoords(activeCell);
+            
+            if (r > -1 && c > -1) {
+                if (!activeCell.classList.contains('definition') && activeCell.innerText.trim().length > 1) {
+                     prefillWord = activeCell.innerText.trim();
+                } else {
+                    let hWord = "";
+                    for(let i = c - 1; i >= 0; i--) {
+                        let text = cells[r][i].innerText.trim();
+                        if(text.length === 1 && !arrowChars.includes(text) && !cells[r][i].classList.contains('black')) { hWord += text; } 
+                        else break;
+                    }
+                    let vWord = "";
+                    for(let i = r + 1; i < rows; i++) {
+                        let text = cells[i][c].innerText.trim();
+                        if(text.length === 1 && !arrowChars.includes(text) && !cells[i][c].classList.contains('black')) { vWord += text; } 
+                        else break;
+                    }
+                    if (hWord.length > 1) prefillWord = hWord;
+                    else if (vWord.length > 1) prefillWord = vWord;
+                }
+            }
+
+            document.getElementById('wikiSearchTerm').value = prefillWord;
+            document.getElementById('wikiPreview').value = '';
+            document.getElementById('wikiModal').style.display = 'flex';
+            
+            if (prefillWord !== "") {
+                executeWikiSearch();
+            } else {
+                document.getElementById('wikiSearchTerm').focus();
+            }
+        }
+
+        function closeWikiModal() { document.getElementById('wikiModal').style.display = 'none'; }
+
+        async function executeWikiSearch() {
+            let targetWord = document.getElementById('wikiSearchTerm').value;
+            if (!targetWord || targetWord.trim() === "") return;
+            targetWord = targetWord.trim();
+            const previewEl = document.getElementById('wikiPreview');
+            previewEl.value = "🔍 מחפש הגדרה חכמה ברשת, אנא המתן...";
+            
+            try {
+                // חיפוש פתוח (Open Search) כדי לא להיות מקובע על השם המדויק
+                let searchUrl = `https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(targetWord)}&limit=1&namespace=0&format=json&origin=*`;
+                let searchRes = await fetch(searchUrl);
+                let searchData = await searchRes.json();
+                
+                if (searchData[1].length === 0) {
+                    previewEl.value = "";
+                    return alert(`לא מצאנו ערך בוויקיפדיה ל-"${targetWord}". נסה לנסח אחרת.`);
+                }
+                
+                let exactTitle = searchData[1][0]; 
+                
+                let url = `https://he.wikipedia.org/w/api.php?action=query&prop=extracts|pageprops&exintro=true&explaintext=true&titles=${encodeURIComponent(exactTitle)}&format=json&origin=*`;
+                let res = await fetch(url);
+                let data = await res.json();
+                let pages = data.query.pages;
+                let page = Object.values(pages)[0];
+                
+                let finalClue = "";
+
+                if (page.pageprops && page.pageprops['wikibase-shortdesc']) {
+                    finalClue = page.pageprops['wikibase-shortdesc'];
+                } else if (page.extract) {
+                    let extract = page.extract;
+                    let cleanTerm = exactTitle.split('(')[0].trim(); 
+                    
+                    let firstSentence = extract.split('.')[0] + '.';
+                    firstSentence = firstSentence.replace(/\s*\([^)]*\)/g, ''); 
+                    
+                    let regex = new RegExp('^\\s*' + cleanTerm + '\\s*(הוא|היא|הינו|הינה|הם|הן|היה|הייתה)?\\s*', 'i');
+                    firstSentence = firstSentence.replace(regex, '').trim();
+                    firstSentence = firstSentence.replace(/^[,|-]\s*/, '');
+                    
+                    finalClue = firstSentence;
+                }
+
+                if (finalClue !== "") {
+                    // הוספת (2, 3) גם בויקי-סוכן!
+                    let lengthsStr = getWordLengthsStr(targetWord);
+                    if (lengthsStr !== "" && !finalClue.includes(lengthsStr)) {
+                        finalClue += lengthsStr;
+                    }
+                    previewEl.value = finalClue;
+                } else {
+                    previewEl.value = "";
+                    alert("נמצא הערך, אך לא הצלחנו לחלץ ממנו הגדרה ברורה.");
+                }
+
+            } catch (e) {
+                previewEl.value = "";
+                alert("שגיאת תקשורת עם ויקיפדיה.");
+            }
+        }
+
+        function applyWikiClue() {
+            let finalClue = document.getElementById('wikiPreview').value.trim();
+            if(finalClue === "") return alert("אין הגדרה להזרקה.");
+            document.getElementById('ceText').value = finalClue;
+            updateActiveCellFromPanel();
+            closeWikiModal();
+        }
+        // ===============================================================
+
         function highlightSlot(r, c, dir) {
             document.querySelectorAll('.cell').forEach(cell => { cell.classList.remove('highlighted', 'active-cell'); });
             if (cells[r][c].classList.contains('black') || cells[r][c].classList.contains('definition')) return;
@@ -528,36 +784,57 @@
             i = (dir === 'horizontal' ? c : r) + 1;
             while(i < (dir === 'horizontal' ? cols : rows)) { let cell = dir === 'horizontal' ? cells[r][i] : cells[i][c]; if (cell.classList.contains('black') || cell.classList.contains('definition')) break; currentHighlightedCells.push(cell); i++; }
 
-            currentHighlightedCells.sort((a,b) => { let pA = getCellCoords(a); let pB = getCellCoords(b); return dir === 'horizontal' ? pB.c - pA.c : pA.r - pB.r; });
+            currentHighlightedCells.sort((a,b) => { let pA = getCellCoords(a); let pB = getCellCoords(b); return dir === 'horizontal' ? pA.c - pB.c : pA.r - pB.r; });
             currentHighlightedCells.forEach(cell => { if(!cell.classList.contains('active-cell')) cell.classList.add('highlighted'); });
         }
 
+        // פונקציית היפוך טקסט מילה בתיבה הידנית
+        function reverseManualInput() {
+            let el = document.getElementById('manualSlotInput');
+            el.value = el.value.split('').reverse().join('');
+        }
 
         function searchPatternInDB() {
             if(currentHighlightedCells.length < 2) return alert("סמן חלל של לפחות 2 משבצות בלוח!");
-            let patternStr = "^"; let hasLetters = false;
+            let patternStr = ""; 
             currentHighlightedCells.forEach(cell => {
                 let val = cell.innerText.trim();
-                if(val.length === 1 && !arrowChars.includes(val)) { patternStr += val; hasLetters = true; } else { patternStr += "."; }
+                if(val.length === 1 && !arrowChars.includes(val)) { patternStr += val; } else { patternStr += "."; }
             });
-            patternStr += "$";
             
-            let regex = new RegExp(patternStr); let matches = [];
+            let regexStrict = new RegExp("^" + patternStr + "$"); 
             let filterCat = document.getElementById('activeCategoryFilter').value;
+            let allowPartial = document.getElementById('allowPartialSlots').checked;
+            let slotLen = currentHighlightedCells.length;
+            let matches = [];
 
             for (let cWord in smartDB) {
                 let entry = smartDB[cWord];
                 if (filterCat !== "ALL" && entry.category !== filterCat) continue;
-                if (regex.test(cWord) && !placedWordsInfo.some(i => i.word === cWord)) { matches.push(entry); }
+                if (placedWordsInfo.some(i => i.word === cWord)) continue;
+
+                if (cWord.length === slotLen) {
+                    if (regexStrict.test(cWord)) matches.push({...entry, isPartial: false});
+                } else if (allowPartial && cWord.length >= 2 && cWord.length < slotLen) {
+                    // חיפוש למילים חלקיות: בודק אם מתאים לתחילת התבנית
+                    let partialPat = "^" + patternStr.substring(0, cWord.length) + "$";
+                    if (new RegExp(partialPat).test(cWord)) {
+                        // מוודא שהמשבצת שאחרי המילה הקצרה פנויה (כדי שיהיה אפשר לשים בה בלוק שחור)
+                        let nextCell = currentHighlightedCells[cWord.length];
+                        if (nextCell && !nextCell.classList.contains('locked') && nextCell.innerText.trim() === '') {
+                            matches.push({...entry, isPartial: true, matchLen: cWord.length});
+                        }
+                    }
+                }
             }
 
             const panel = document.getElementById('suggestionsPanel'); const list = document.getElementById('suggestionsList'); const title = document.getElementById('suggestionsTitle');
             list.innerHTML = '';
-            let patDisp = patternStr.replace('^','').replace('$','').replace(/\./g, '_').split('').join(' ');
-            title.innerText = `מנתח החללים מצא התאמות לתבנית: [ ${patDisp} ]`;
+            let patDisp = patternStr.replace(/\./g, '_').split('').join(' ');
+            title.innerText = `מנתח החללים מחפש תבנית: [ ${patDisp} ]`;
 
             if (matches.length === 0) { 
-                list.innerHTML = `<p>לא נמצאו מילים שמתאימות לתבנית.</p>`; 
+                list.innerHTML = `<p>לא נמצאו מילים במאגר שמתאימות לתבנית זו.</p>`; 
             } else {
                 matches.sort((a,b) => {
                     if (b.score !== a.score) return b.score - a.score;
@@ -566,17 +843,12 @@
 
                 matches.forEach(sugg => {
                     const item = document.createElement('div'); item.className = 'suggestion-item';
-                    item.innerHTML = `<div><span class="suggestion-word">${sugg.original}</span><span class="score-badge">ציון: ${sugg.score}</span></div>`;
+                    let partialBadge = sugg.isPartial ? `<span style="background: #dc3545; color:white; font-size:10px; padding:2px 5px; border-radius:3px; margin-right:5px;">תוצב משבצת שחורה</span>` : '';
+                    
+                    item.innerHTML = `<div><span class="suggestion-word">${sugg.original}</span><span class="score-badge">ציון: ${sugg.score}</span>${partialBadge}</div>`;
                     const btn = document.createElement('button'); btn.className = 'btn-dark'; btn.style.padding = '5px 10px'; btn.style.fontSize = '12px'; btn.innerText = 'הזרק לחלל!';
                     
-                    btn.onclick = function() { 
-                        let cWord = cleanWord(sugg.original);
-                        currentHighlightedCells.forEach((cell, idx) => { cell.innerText = cWord[idx]; cell.classList.add('locked'); });
-                        let p = getCellCoords(currentHighlightedCells[0]);
-                        placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
-                        let dict = {}; dict[cWord] = sugg.def; placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
-                        panel.style.display = 'none'; currentHighlightedCells.forEach(c => c.classList.add('just-added'));
-                    };
+                    btn.onclick = function() { injectToHighlighted(sugg.original, sugg.def, sugg.isPartial); };
                     item.appendChild(btn); list.appendChild(item);
                 });
             }
@@ -585,8 +857,9 @@
             manualDiv.style.cssText = "margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;";
             manualDiv.innerHTML = `
                 <div style="font-size:13px; font-weight:bold; margin-bottom:5px; color:#495057;">הכנס מילה ידנית לחלל זה (${currentHighlightedCells.length} אותיות):</div>
-                <div style="display:flex; gap:10px;">
+                <div style="display:flex; gap:10px; align-items:center;">
                     <input type="text" id="manualSlotInput" placeholder="הקלד כאן..." maxlength="${currentHighlightedCells.length}" style="margin-bottom:0;">
+                    <button class="btn-outline" onclick="reverseManualInput()" title="הפוך כיוון אותיות (לפתרון בעיית עברית הפוכה)" style="padding: 10px;">🔀</button>
                     <button class="btn-theme" onclick="forceInjectToSlot()" style="white-space:nowrap;">הזרק ונעץ 📌</button>
                 </div>
             `;
@@ -594,21 +867,49 @@
             panel.style.display = 'block';
         }
 
+        // הזרקה חכמה שיודעת לשים בלוק שחור בסוף מילה חלקית
+        function injectToHighlighted(originalWord, def, isPartial = false) {
+            let cWord = cleanWord(originalWord);
+            
+            for(let i=0; i<cWord.length; i++) {
+                currentHighlightedCells[i].innerText = cWord[i];
+                currentHighlightedCells[i].classList.add('locked');
+            }
+            
+            // חוסם אוטומטית אם המילה קצרה יותר מהחלל המסומן
+            if (isPartial && cWord.length < currentHighlightedCells.length) {
+                let blockCell = currentHighlightedCells[cWord.length];
+                let coords = getCellCoords(blockCell);
+                toggleBlackBlock(coords.r, coords.c, true);
+            }
+            
+            let p = getCellCoords(currentHighlightedCells[0]);
+            placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
+            let dict = {}; dict[cWord] = def; 
+            placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
+            
+            document.getElementById('suggestionsPanel').style.display = 'none'; 
+            
+            for(let i=0; i<cWord.length; i++) {
+                currentHighlightedCells[i].classList.add('just-added');
+            }
+            saveState();
+        }
+
         function forceInjectToSlot() {
             let val = document.getElementById('manualSlotInput').value.trim();
             let cWord = cleanWord(val);
-            if(cWord.length !== currentHighlightedCells.length) {
-                return alert(`המילה חייבת להיות בדיוק בת ${currentHighlightedCells.length} אותיות!`);
-            }
-            if(!smartDB[cWord]) insertToDB(val, "", "הוזן ידנית ללוח");
             
-            currentHighlightedCells.forEach((cell, idx) => { cell.innerText = cWord[idx]; cell.classList.add('locked'); });
-            let p = getCellCoords(currentHighlightedCells[0]);
-            placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
-            let dict = {}; dict[cWord] = smartDB[cWord] ? smartDB[cWord].def : ""; 
-            placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
-            document.getElementById('suggestionsPanel').style.display = 'none'; 
-            currentHighlightedCells.forEach(c => c.classList.add('just-added'));
+            let allowPartial = document.getElementById('allowPartialSlots').checked;
+            if(cWord.length !== currentHighlightedCells.length && !allowPartial) {
+                return alert(`המילה באורך ${cWord.length} והחלל באורך ${currentHighlightedCells.length}. אם תרצה לאפשר זאת, סמן את ה-V של "מילים קצרות" למעלה.`);
+            }
+            if(cWord.length > currentHighlightedCells.length) {
+                return alert("המילה ארוכה מדי לחלל המסומן!");
+            }
+            
+            if(!smartDB[cWord]) insertToDB(val, "", "הוזן ידנית ללוח");
+            injectToHighlighted(val, smartDB[cWord] ? smartDB[cWord].def : "", cWord.length < currentHighlightedCells.length);
         }
 
         function toggleBlackBlock(r, c, forceBlack = null) {
@@ -618,7 +919,7 @@
                 let t = cells[row][col];
                 if(isBlack) {
                     t.classList.add('black'); t.innerText = ''; t.contentEditable = false;
-                    t.classList.remove('definition', 'locked', 'heatmap-error', 'active-cell', 'highlighted');
+                    t.classList.remove('definition', 'locked', 'heatmap-error', 'active-cell', 'highlighted', 'just-added');
                 } else {
                     t.classList.remove('black'); t.contentEditable = true;
                 }
@@ -628,6 +929,7 @@
                 let oppR = rows - 1 - r; let oppC = cols - 1 - c;
                 if(oppR !== r || oppC !== c) applyBlack(oppR, oppC, willBeBlack);
             }
+            saveState(); // שמירה בכל הוספת שחור
         }
 
         function runHeatmap() {
@@ -656,7 +958,7 @@
                 }
             }
             if(errors > 0) {
-                alert(`⚠️ נמצאו אזורים מתים (רווח של משבצת בודדת). לחץ על "תקן חורים" כדי לחסום אותם.`);
+                alert(`⚠️ נמצאו אזורים מתים (רווח של משבצת בודדת). לא קיימת מילה בעברית של אות 1. לחץ על "תקן חורים" כדי לחסום אותם.`);
                 document.getElementById('btnAutoFix').style.display = 'inline-block';
             } else {
                 alert("✅ הלוח נקי! אין חללים של משבצת בודדת.");
@@ -707,7 +1009,7 @@
             cols++; renderDOM();
         }
 
-        function clearGrid() { if(confirm("לנקות הלוח?")) { rows = 15; cols = 15; initGrid(); activeCell = null; document.getElementById('suggestionsPanel').style.display='none';} }
+        function clearGrid() { if(confirm("לנקות הלוח?")) { rows = 15; cols = 15; initGrid(); activeCell = null; document.getElementById('suggestionsPanel').style.display='none'; localStorage.removeItem('tashbetzSavedGrid');} }
         function printEmpty() { document.body.classList.add('print-empty-mode'); window.print(); setTimeout(() => { document.body.classList.remove('print-empty-mode'); }, 1000); }
         
         function syncLogicFromDOM() {
@@ -729,7 +1031,6 @@
                 }
             }
             localStorage.setItem('tashbetzSavedGrid', JSON.stringify({visual: state, logic: gridLogic, placed: placedWordsInfo, r: rows, c: cols}));
-            alert("הלוח נשמר!");
         }
 
         function loadState() {
@@ -786,7 +1087,6 @@
             return { valid: true, intersections: intersections };
         }
 
-        // --- תיקון: הזרקה חכמה רב-שלבית לפסיקים ---
         function injectDirectWords() {
             clearNewHighlights(); syncLogicFromDOM();
             const inputField = document.getElementById('directWordInput');
@@ -797,7 +1097,6 @@
 
             const newWords = text.split(/[\n,]+/).map(w => w.trim()).filter(w => w.length > 0);
             
-            // מכניס למאגר קודם
             newWords.forEach(originalWord => {
                 let cWord = cleanWord(originalWord);
                 if (cWord.length > 1 && !smartDB[cWord]) {
@@ -805,62 +1104,56 @@
                 }
             });
 
-            // מנסה לשבץ בגלים (כדי לאפשר להם להתחבר)
             let wordsToPlace = newWords.map(w => cleanWord(w)).filter(w => w.length > 1 && !placedWordsInfo.some(info => info.word === w));
             if (wordsToPlace.length === 0) { inputField.value = ''; return; }
 
             let successfullyPlaced = 0;
-            let attempts = 0;
-            let placedInThisRun = true;
             
-            while (wordsToPlace.length > 0 && attempts < 10) {
-                placedInThisRun = false;
-                for (let i = 0; i < wordsToPlace.length; i++) {
-                    let cWord = wordsToPlace[i];
-                    let bestPlacement = null;
+            for (let i = 0; i < wordsToPlace.length; i++) {
+                let cWord = wordsToPlace[i];
+                let bestPlacement = null;
 
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        let resH = checkPlacementRules(gridLogic, cWord, r, c, true);
+                        if (resH.valid && resH.intersections > 0) { if(!bestPlacement || resH.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: true, def: smartDB[cWord].def}; }
+                        let resV = checkPlacementRules(gridLogic, cWord, r, c, false);
+                        if (resV.valid && resV.intersections > 0) { if(!bestPlacement || resV.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: false, def: smartDB[cWord].def}; }
+                    }
+                }
+
+                if (!bestPlacement) {
                     for (let r = 0; r < rows; r++) {
                         for (let c = 0; c < cols; c++) {
                             let resH = checkPlacementRules(gridLogic, cWord, r, c, true);
-                            if (resH.valid && resH.intersections > 0) { if(!bestPlacement || resH.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: true, def: smartDB[cWord].def}; }
+                            if (resH.valid) { bestPlacement = {word: cWord, r: r, c: c, isH: true, def: smartDB[cWord].def}; break; }
                             let resV = checkPlacementRules(gridLogic, cWord, r, c, false);
-                            if (resV.valid && resV.intersections > 0) { if(!bestPlacement || resV.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: false, def: smartDB[cWord].def}; }
+                            if (resV.valid) { bestPlacement = {word: cWord, r: r, c: c, isH: false, def: smartDB[cWord].def}; break; }
                         }
-                    }
-
-                    if (!bestPlacement && placedWordsInfo.length === 0) {
-                        let startR = Math.floor(rows / 2); let startC = Math.floor((cols - cWord.length) / 2);
-                        if(startC >= 0 && checkPlacementRules(gridLogic, cWord, startR, startC, true).valid) bestPlacement = {word: cWord, r: startR, c: startC, isH: true, def: smartDB[cWord].def};
-                    }
-
-                    if (bestPlacement) {
-                        for (let j = 0; j < cWord.length; j++) {
-                            let currR = bestPlacement.isH ? bestPlacement.r : bestPlacement.r + j;
-                            let currC = bestPlacement.isH ? bestPlacement.c + j : bestPlacement.c;
-                            gridLogic[currR][currC] = cWord[j]; 
-                            cells[currR][currC].innerText = cWord[j];
-                            cells[currR][currC].classList.add('locked'); 
-                        }
-                        placedWordsInfo.push({word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH});
-                        let tempDict = {}; tempDict[cWord] = bestPlacement.def; placeDefinitions([{word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH}], tempDict);
-                        highlightNewCells(bestPlacement.r, bestPlacement.c, cWord.length, bestPlacement.isH);
-                        successfullyPlaced++;
-                        
-                        wordsToPlace.splice(i, 1);
-                        i--; 
-                        placedInThisRun = true;
+                        if(bestPlacement) break;
                     }
                 }
-                if (!placedInThisRun) break; 
-                attempts++;
+
+                if (bestPlacement) {
+                    for (let j = 0; j < cWord.length; j++) {
+                        let currR = bestPlacement.isH ? bestPlacement.r : bestPlacement.r + j;
+                        let currC = bestPlacement.isH ? bestPlacement.c + j : bestPlacement.c;
+                        gridLogic[currR][currC] = cWord[j]; 
+                        cells[currR][currC].innerText = cWord[j];
+                        cells[currR][currC].classList.add('locked'); 
+                    }
+                    placedWordsInfo.push({word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH});
+                    let tempDict = {}; tempDict[cWord] = bestPlacement.def; placeDefinitions([{word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH}], tempDict);
+                    highlightNewCells(bestPlacement.r, bestPlacement.c, cWord.length, bestPlacement.isH);
+                    successfullyPlaced++;
+                }
             }
             saveDB(); inputField.value = ''; 
-            if (wordsToPlace.length > 0) {
-                alert(`שובצו ${successfullyPlaced} עוגנים. ${wordsToPlace.length} עוגנים לא שובצו כי לא נמצאה להם נקודת חיתוך. התחל לבנות סביב מה ששובץ!`);
+            if (successfullyPlaced < wordsToPlace.length) {
+                alert(`שובצו ${successfullyPlaced} עוגנים. אין יותר מקום פיזי פנוי בלוח לשאר המילים.`);
             }
         }
 
-        // --- מילוי לוח אוטומטי (AutoFill מלא) ---
         function generateCrossword() {
             clearNewHighlights(); syncLogicFromDOM();
             let filterCat = document.getElementById('activeCategoryFilter').value;
@@ -928,11 +1221,10 @@
                 placedWordsInfo.forEach(info => { if(smartDB[info.word]) dictForPlacement[info.word] = smartDB[info.word].def; });
                 placeDefinitions(placedWordsInfo, dictForPlacement);
             } else {
-                alert("לא הצלחנו לשבץ מילים נוספות. נסה להוסיף מילות דבק למאגר.");
+                alert("לא הצלחנו לשבץ מילים נוספות בלוח הקיים. נסה להוסיף מילות דבק (2-3 אותיות) למאגר.");
             }
         }
 
-        // --- הצע מילים (יועץ) ---
         function suggestQualityWords() {
             clearNewHighlights(); syncLogicFromDOM();
             let filterCat = document.getElementById('activeCategoryFilter').value;
@@ -977,7 +1269,6 @@
                 item.innerHTML = `<div><span class="suggestion-word">${sugg.original}</span><span class="score-badge">ציון: ${sugg.score}</span><span style="font-size:11px; color:#999; margin-right:15px;">(${sugg.isH ? 'מאוזן' : 'מאונך'}, ${overlapText})</span></div>`;
                 const btn = document.createElement('button'); btn.className = 'btn-green'; btn.style.padding = '5px 10px'; btn.style.fontSize = '12px'; btn.innerText = 'שבץ אותי!';
                 
-                // התיקון הקריטי: שבץ אותי דוחף ללוח
                 btn.onclick = function() {
                     for (let j = 0; j < sugg.word.length; j++) {
                         let currR = sugg.isH ? sugg.r : sugg.r + j; let currC = sugg.isH ? sugg.c + j : sugg.c;
