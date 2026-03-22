@@ -2,273 +2,434 @@
 <html dir="rtl" lang="he">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>מערכת הפעלה לעורכי תשחצים - Pro Max</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; }
-        
-        .tabs { width: 100%; background: #343a40; display: flex; justify-content: center; padding: 10px 0; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-wrap: wrap;}
-        .tab-btn { background: transparent; color: #adb5bd; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;}
-        .tab-btn:hover { color: #fff; }
-        .tab-btn.active { color: #fff; border-bottom: 3px solid #20c997; }
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --dark: #343a40;
+            --light: #f8fafc;
+            --gray: #cbd5e1;
+            --text: #334155;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
 
-        .tab-content { display: none; width: 100%; max-width: 1100px; padding: 0 15px; box-sizing: border-box; flex-direction: column; align-items: center;}
-        .tab-content.active { display: flex; }
+        body { 
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5; color: var(--text);
+            margin: 0; padding: 0; 
+            overscroll-behavior: none; 
+        }
+        
+        input[type="text"], input[type="file"], select, textarea { 
+            width: 100%; padding: 10px; font-size: 14px; 
+            border: 1px solid #ced4da; border-radius: 5px; box-sizing: border-box; margin-bottom: 10px;
+        }
 
-        h1 { color: #333; margin-bottom: 15px; text-align: center; width: 100%; font-size: 24px;}
-        
-        .panel-box { background: #fff; border-radius: 8px; padding: 15px; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; border: 1px solid #e9ecef;}
-        .panel-title { font-size: 16px; font-weight: bold; color: #495057; margin-bottom: 10px; border-bottom: 2px solid #f8f9fa; padding-bottom: 5px;}
-        
-        input[type="text"], input[type="file"], select, textarea { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #ced4da; border-radius: 5px; box-sizing: border-box; margin-bottom: 10px;}
-        
-        .flex-row { display: flex; gap: 15px; width: 100%; align-items: flex-start; margin-bottom: 10px;}
-        .flex-col { flex: 1; display: flex; flex-direction: column;}
-        
-        button { padding: 10px 15px; font-size: 14px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; font-weight: bold; transition: 0.2s;}
+        button { 
+            padding: 10px 15px; font-size: 14px; cursor: pointer; color: white; border: none; 
+            border-radius: 5px; font-weight: bold; transition: 0.2s; 
+        }
         button:hover { filter: brightness(0.9); }
+        button:active { transform: scale(0.98); }
+        
+        .btn-theme { background-color: #007bff; }
         .btn-green { background-color: #28a745; }
         .btn-purple { background-color: #6f42c1; }
         .btn-orange { background-color: #fd7e14; }
         .btn-red { background-color: #dc3545; }
-        .btn-dark { background-color: #343a40; }
+        .btn-dark { background-color: var(--dark); }
         .btn-outline { background-color: transparent; border: 1px solid #6c757d; color: #6c757d;}
-        .btn-gold { background-color: #ffc107; color: #000; border: 1px solid #d39e00; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 16px;}
-        .btn-gold:hover { background-color: #e0a800; }
-        
-        .cell-editor { background: #e8f4f8; border: 1px solid #bce8f1; padding: 15px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
-        .cell-editor textarea { height: 40px; margin-bottom: 0; flex: 2; min-width: 200px;}
-        .cell-editor select { margin-bottom: 0; flex: 1; height: 40px; min-width: 120px;}
-        
-        .file-upload { display: flex; align-items: center; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px dashed #adb5bd; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;}
-        .file-upload input { margin-right: 10px; flex: 1; min-width: 150px;}
+        .btn-gold { background-color: #ffc107; color: #000; border: 1px solid #d39e00; font-size: 16px;}
 
-        .autocomplete-wrapper { position: relative; flex: 1; min-width: 200px;}
-        .autocomplete-items { position: absolute; border: 1px solid #d4d4d4; border-bottom: none; border-top: none; z-index: 99; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background-color: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 0 0 5px 5px; }
-        .autocomplete-items div { padding: 10px; cursor: pointer; border-bottom: 1px solid #d4d4d4; text-align: right; font-size: 14px; }
-        .autocomplete-items div:hover { background-color: #e9ecef; }
-        .autocomplete-cat { font-size: 11px; color: #6c757d; float: left; margin-top: 2px; }
-
-        .grid-wrapper { width: 100%; max-width: 100vw; overflow-x: auto; text-align: center; padding-bottom: 15px; direction: rtl; display: flex; justify-content: flex-start;}
-        #grid { display: inline-grid; background-color: transparent; border-top: 2px solid #000; border-right: 2px solid #000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin: 0 auto; text-align: right;}
-        .cell { background-color: #fff; display: flex; justify-content: center; align-items: center; text-align: center; font-weight: bold; font-size: 20px; cursor: text; overflow: hidden; word-wrap: break-word; padding: 2px; outline: none; white-space: pre-wrap; line-height: 1.1; box-sizing: border-box; border-bottom: 2px solid #000; border-left: 2px solid #000; width: 40px; height: 40px; transition: background-color 0.3s ease; position: relative;}
+        .app-container { width: 100%; }
+        
+        #grid { 
+            display: inline-grid; background-color: transparent; 
+            border-top: 2px solid #000; border-right: 2px solid #000; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin: 0 auto; 
+            text-align: right; width: max-content; min-width: max-content;
+        }
+        .cell { 
+            background-color: #fff; display: flex; justify-content: center; align-items: center; 
+            text-align: center; font-weight: bold; font-size: 20px; cursor: text; 
+            overflow: hidden; word-wrap: break-word; padding: 2px; outline: none; 
+            white-space: pre-wrap; line-height: 1.1; box-sizing: border-box; 
+            border-bottom: 2px solid #000; border-left: 2px solid #000; 
+            width: 40px; height: 40px; transition: background-color 0.1s; position: relative;
+        }
         
         .cell.active-cell { background-color: #fff3cd; box-shadow: inset 0 0 5px #ffc107;}
         .cell.highlighted { background-color: #cce5ff; } 
-        .cell.black { background-color: #333 !important; cursor: pointer; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
-        .cell.definition { font-size: 10px; font-weight: bold; background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
-        .cell.just-added { background-color: #d1e7dd !important; box-shadow: inset 0 0 8px #198754; color: #0f5132;}
-        .cell.locked { background-color: #f8f9fa; border: 2px dashed #0d6efd;}
+        .cell.black { background-color: #333 !important; cursor: pointer; }
+        .cell.definition { font-size: 10px; font-weight: bold; background-color: #e2e8f0 !important; }
+        .cell.just-added { background-color: #d1e7dd !important; color: #0f5132;}
+        .cell.locked { background-color: #f8f9fa; border: 2px dashed #007bff;}
         .cell.locked::after { content: '📌'; position: absolute; top: -2px; right: 0px; font-size: 12px; }
         .cell.heatmap-error { background-color: #f8d7da !important; box-shadow: inset 0 0 15px #dc3545; border: 2px solid #dc3545;}
 
-        #suggestionsPanel { display: none; width: 100%; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-sizing: border-box; }
-        #suggestionsList { max-height: 400px; overflow-y: auto; padding-right: 5px; }
-        .suggestion-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; border: 1px solid #ffeeba; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px;}
-        .score-badge { display: inline-block; background: #20c997; color: white; border-radius: 20px; padding: 2px 8px; font-size: 11px; font-weight: bold; margin-left: 10px;}
+        .autocomplete-wrapper { position: relative; flex: 1; min-width: 200px;}
+        .autocomplete-items { 
+            position: absolute; border: 1px solid #ced4da; z-index: 3000; 
+            top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; 
+            background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border-radius: 0 0 5px 5px; 
+        }
+        .autocomplete-items div { padding: 10px; cursor: pointer; border-bottom: 1px solid #f8f9fa; text-align: right; font-size: 14px; }
+        .autocomplete-items div:hover { background-color: #e9ecef; }
+        .autocomplete-cat { font-size: 11px; color: #6c757d; float: left; margin-top: 2px; }
+        
+        .suggestion-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; border: 1px solid #ffeeba; flex-wrap: wrap; gap: 10px;}
+        .score-badge { background: #20c997; color: white; border-radius: 20px; padding: 2px 8px; font-size: 11px; font-weight: bold;}
         
         .dict-table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 5px; min-width: 600px;}
         th, td { padding: 10px; text-align: right; border-bottom: 1px solid #e9ecef; font-size: 13px;}
         th { background-color: #f8f9fa; color: #495057; }
         tr:hover { background-color: #f1f3f5; }
+        .action-btn { padding: 4px 8px; font-size: 12px; margin-left: 5px; border-radius: 4px; }
         .cat-tag { background: #6f42c1; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;}
 
-        .action-btn { padding: 4px 8px; font-size: 12px; margin-left: 5px; border-radius: 4px; }
-        .btn-edit { background-color: #ffc107; color: #000; }
-        .btn-delete { background-color: #dc3545; color: #fff; }
+        .modal-center-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 4000; padding: 15px; box-sizing: border-box;}
+        .modal-center-content { background: #fff; padding: 20px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); box-sizing: border-box; }
 
+        /* =================== תפריטים מרחפים (HUD) =================== */
+        .floating-toolbar {
+            position: fixed; z-index: 5000; display: none; background: #1e293b;
+            padding: 8px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            flex-direction: row; gap: 8px; align-items: center;
+            transform: translateX(50%); transition: top 0.2s, left 0.2s;
+            border: 1px solid #475569;
+        }
+        .floating-toolbar button { background: rgba(255,255,255,0.1); color: #f8fafc; padding: 8px 12px; border-radius: 8px; font-size: 13px; box-shadow: none;}
+        .floating-toolbar button:hover { background: rgba(255,255,255,0.2); }
+        .floating-toolbar .danger-btn { color: #fca5a5; }
+
+        .floating-results {
+            position: fixed; z-index: 4999; display: none; background: #fff;
+            width: 320px; max-width: 90vw; max-height: 45vh; overflow-y: auto;
+            border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            padding: 15px; transform: translateX(50%); border: 1px solid #cbd5e1;
+            transition: top 0.2s, left 0.2s;
+        }
+
+        /* Desktop Layout */
+        @media (min-width: 769px) {
+            .mobile-header, .mobile-nav, .sheet-handle, .sheet-overlay { display: none !important; }
+            
+            .desktop-tabs { width: 100%; background: var(--dark); padding: 10px 0; display: flex; justify-content: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-bottom: 20px;}
+            .tab-btn { background: transparent; color: #adb5bd; border: none; padding: 10px 20px; font-size: 18px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;}
+            .tab-btn:hover { color: #fff; }
+            .tab-btn.active { color: #fff; border-bottom: 3px solid #20c997; }
+
+            .view-section { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
+            .view-section.active { display: flex; }
+
+            .sidebar { display: contents; } 
+            .board-area { display: contents; } 
+
+            .app-panel { width: 100%; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; border: 1px solid #e9ecef; position: relative !important; bottom: auto !important; max-height: none !important; }
+            .panel-title { font-size: 16px; font-weight: bold; color: #495057; margin-bottom: 10px; border-bottom: 2px solid #f8f9fa; padding-bottom: 5px;}
+
+            .grid-wrapper { width: 100%; max-width: 95vw; overflow-x: auto; text-align: center; padding-bottom: 15px; direction: rtl; display: flex; justify-content: center; }
+
+            .flex-row { display: flex; flex-direction: row; gap: 15px; width: 100%; align-items: flex-start; margin-bottom: 10px;}
+            .flex-gap { display: flex; gap: 15px; flex-wrap: wrap; width: 100%; align-items: center;}
+            .flex-1 { flex: 1; }
+            
+            .btn-group { display: flex; justify-content: center; gap: 10px; background: transparent; border: none; box-shadow: none; padding: 0; flex-direction: row;}
+            .btn-group button { width: auto !important; flex: none !important; }
+
+            #stat-avg { display: inline-block; }
+            
+            .cell-editor { background: #e8f4f8; border: 1px solid #bce8f1; padding: 15px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
+            .cell-editor textarea { height: 40px; margin-bottom: 0; flex: 2; min-width: 200px;}
+            .cell-editor select { margin-bottom: 0; flex: 1; height: 40px; min-width: 120px;}
+        }
+
+        /* Mobile Layout */
         @media (max-width: 768px) {
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+            .desktop-tabs { display: none; }
+            .mobile-header { background: var(--dark); color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.1);}
+            
+            .app-container { height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+            .view-section { display: none; flex: 1; overflow: hidden; flex-direction: column;}
+            .view-section.active { display: flex; }
+
+            .board-area { flex: 1; padding-bottom: 70px; display: flex; flex-direction: column; overflow: hidden; background: #e2e8f0; } 
+            .grid-wrapper { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 20px; display: block; padding-bottom: 50vh;}
+
+            .db-container { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 90px; background: var(--light);}
+
+            .app-panel {
+                position: fixed; bottom: -120%; left: 0; width: 100%;
+                background: #fff; z-index: 2000; border-radius: 24px 24px 0 0;
+                box-shadow: 0 -4px 25px rgba(0,0,0,0.15); padding: 20px; 
+                padding-bottom: max(20px, env(safe-area-inset-bottom)); box-sizing: border-box;
+                transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+                max-height: 85dvh; overflow-y: auto; border: none;
+            }
+            .app-panel.active { bottom: 0; }
+            .sheet-handle { width: 40px; height: 5px; background: var(--gray); border-radius: 5px; margin: 0 auto 20px auto; }
+            
+            .sheet-overlay {
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.5); z-index: 1999;
+                opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            }
+            .sheet-overlay.active { opacity: 1; pointer-events: auto; }
+
+            .mobile-nav {
+                display: flex; position: fixed; bottom: 0; left: 0; width: 100%;
+                background: #fff; border-top: 1px solid #e2e8f0;
+                padding-bottom: env(safe-area-inset-bottom); z-index: 1500;
+            }
+            .mobile-nav button {
+                flex: 1; background: transparent; border: none; padding: 10px 0;
+                display: flex; flex-direction: column; align-items: center; gap: 4px;
+                color: #64748b; font-size: 11px; font-weight: bold; border-radius: 0;
+            }
+            .mobile-nav button.active { color: var(--primary); }
+            .mobile-nav button i { font-size: 22px; font-style: normal;}
+            
             .flex-row { flex-direction: column; }
-            .panel-box { padding: 10px; }
-            .btn-group { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
-            .btn-group button { flex: 1; min-width: 45%; }
-            .grid-wrapper { justify-content: flex-start; padding: 0 10px;} 
-            .dict-stats { flex-direction: column; gap: 10px; text-align: center;}
+            .flex-gap { display: flex; gap: 10px; flex-wrap: wrap; width: 100%;}
+            .flex-gap button { flex: 1; min-width: 45%; }
+            .w-100 { width: 100%; }
+            .mt-10 { margin-top: 10px; }
+            .panel-title { font-size: 16px; font-weight: bold; color: var(--dark); margin-bottom: 10px; border-bottom: 2px solid #f8f9fa; padding-bottom: 5px;}
+            
             .suggestion-item { flex-direction: column; align-items: flex-start; }
             .suggestion-item button { width: 100%; margin-top: 5px; }
+            
+            #stat-avg { display: none; }
         }
-
+        
+        .cat-manager-item { background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 14px; margin-bottom: 5px;}
+        .cat-manager-item strong { color: #007bff; }
+        
         @media print {
-            body { background-color: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .tabs, .controls, .panel-box, #suggestionsPanel, .cell-editor { display: none !important; }
-            .grid-wrapper { display: block !important; overflow: visible !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important;}
-            #grid { margin: 0 auto !important; box-shadow: none !important; display: grid !important; page-break-inside: avoid;}
+            body { background-color: #fff; margin: 0; padding: 0; }
+            .desktop-tabs, .mobile-header, .mobile-nav, .app-panel, .sidebar, .floating-toolbar, .floating-results { display: none !important; }
+            .view-section.active { display: block !important; padding: 0 !important; }
+            .board-area { display: block !important; overflow: visible !important; width: 100% !important; }
+            .grid-wrapper { display: block !important; padding: 0 !important; overflow: visible !important; text-align: center; max-width: none !important;}
+            #grid { box-shadow: none !important; margin: 0 auto !important; }
             .cell:not(.definition):not(.black) { background-color: #fff !important; }
-            .cell.active-cell, .cell.highlighted, .cell.just-added { background-color: #fff !important; box-shadow: none !important;}
             .cell.locked { border: 2px solid #000 !important; }
             .cell.locked::after { display: none !important; }
+            .cell.active-cell, .cell.highlighted, .cell.just-added { box-shadow: none !important; background-color: #fff !important;}
         }
-
-        /* מודאלים כלליים */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box;}
-        .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('editor')">📝 סדנת העורך</button>
-        <button class="tab-btn" onclick="switchTab('dictionary')">🧠 מנהל המאגר</button>
+    <div class="desktop-tabs">
+        <button id="deskNavEditor" class="tab-btn active" onclick="switchAppTab('editor')">📝 סדנת העורך</button>
+        <button id="deskNavDb" class="tab-btn" onclick="switchAppTab('db')">🧠 מנהל המאגר</button>
     </div>
 
-    <div id="tab-editor" class="tab-content active">
-        
-        <div class="panel-box">
-            <div class="panel-title">1. הזרקת מילות שלד (עוגנים)</div>
-            <p style="font-size: 13px; color: #555; margin-top: 0;">הקלד מילים להזרקה (מופרדות בפסיקים). ניתן לבחור מההצעות, או לכתוב מילים חדשות.</p>
-            <div class="flex-row">
-                <div class="autocomplete-wrapper">
-                    <input type="text" id="directWordInput" placeholder="הקלד מילה, או רשימת מילים עם פסיק..." autocomplete="off">
-                    <div id="autocompleteList" class="autocomplete-items"></div>
-                </div>
-                <button class="btn-theme" onclick="injectDirectWords()" style="white-space: nowrap; height: 40px; width: 100%;">הכנס ונעץ בלוח 📌</button>
-            </div>
-        </div>
+    <div class="mobile-header">סדנת עורכים Pro</div>
+    <nav class="mobile-nav">
+        <button id="navEditor" class="active" onclick="switchAppTab('editor'); closeBottomSheets();"><i>📋</i><span>הלוח</span></button>
+        <button id="navCell" onclick="openBottomSheet('cellEditorPanel', 'navCell');"><i>✏️</i><span>עורך תא</span></button>
+        <button id="navTools" onclick="openBottomSheet('toolsSheet', 'navTools');"><i>🛠️</i><span>כלים</span></button>
+        <button id="navDb" onclick="switchAppTab('db'); closeBottomSheets();"><i>🧠</i><span>המאגר</span></button>
+    </nav>
 
-        <div class="panel-box">
-            <div class="panel-title">2. פאנל שליטה ובניית הלוח</div>
-            
-            <div style="display: flex; gap: 10px; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 5px; align-items: center; flex-wrap: wrap;">
-                <label style="font-weight: bold; cursor: pointer; color: #007bff; font-size: 14px;">
-                    <input type="checkbox" id="symmetryMode"> 🪞 מצב סימטריה
-                </label>
-                <div style="border-right: 2px solid #ccc; height: 20px; display: none;"></div>
-                <button class="btn-red" style="padding: 5px 10px; font-size: 13px;" onclick="runHeatmap()">🔥 סרוק מפת חום</button>
+    <div id="sheetOverlay" class="sheet-overlay" onclick="closeBottomSheets()"></div>
+
+    <div id="floatingToolbar" class="floating-toolbar">
+        <button onclick="searchPatternInDBContext()" title="מנתח חללים לסימון">🔍 נתח חלל</button>
+        <button onclick="suggestQualityWordsContext()" title="הצע מילים לחלל המסומן">💡 הצע</button>
+        <button onclick="undoAction()" title="חזור צעד אחורה">↩️ בטל</button>
+        <button onclick="clearHighlightedSlot()" class="danger-btn" title="נקה משבצות צהובות">🗑️ נקה</button>
+        <button onclick="closeFloatingUI()" style="color: #94a3b8;" title="סגור">✖️</button>
+    </div>
+
+    <div id="floatingResults" class="floating-results">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:5px;">
+            <h4 id="floatingResultsTitle" style="margin:0; font-size:14px; color:var(--primary);">תוצאות</h4>
+            <button onclick="closeFloatingResultsOnly()" style="background:none; border:none; color:var(--gray); cursor:pointer;">✖️</button>
+        </div>
+        <div style="margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <label style="font-size: 12px; cursor: pointer; font-weight: bold; color: var(--primary);">
+                <input type="checkbox" id="allowPartialSlots" checked> 
+                אפשר מילים קצרות (בלוק שחור בסוף)
+            </label>
+        </div>
+        <div id="floatingSuggestionsList"></div>
+    </div>
+
+
+    <div class="app-container">
+
+        <div id="editorView" class="view-section active">
+            <div class="sidebar">
                 
-                <button class="btn-outline" style="padding: 5px 10px; font-size: 13px; color: #dc3545; border-color: #dc3545;" onclick="clearHighlightedSlot()">🗑️ מחק מילה מסומנת</button>
-                <span style="font-size: 12px; color: #666; width: 100%;">💡 קליק ימני נועל משבצת (📌) | דאבל קליק להשחרה.</span>
+                <div id="toolsSheet" class="app-panel">
+                    <div class="sheet-handle"></div>
+                    <div class="panel-title">1. הזרקת מילות שלד (עוגנים)</div>
+                    <div class="flex-row">
+                        <div class="autocomplete-wrapper flex-1">
+                            <input type="text" id="directWordInput" placeholder="חפש מילה, או הקלד רשימה עם פסיקים..." autocomplete="off" style="margin:0;">
+                            <div id="autocompleteList" class="autocomplete-items"></div>
+                        </div>
+                        <button class="btn-theme" onclick="injectDirectWords()" style="white-space: nowrap; height: 42px;">הזרק ללוח 📌</button>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #e9ecef; margin: 20px 0;">
+
+                    <div class="panel-title">2. בנייה אוטומטית (AutoFill)</div>
+                    <div class="flex-row" style="margin-bottom: 15px; align-items:center;">
+                        <div class="flex-col" style="flex: 1.5;">
+                            <select id="activeCategoryFilter" style="margin:0; height:42px;">
+                                <option value="ALL">שבץ מכל הקטגוריות</option>
+                            </select>
+                        </div>
+                        <button class="btn-purple" style="flex: 1.5;" onclick="generateCrossword()">✨ הפעל AutoFill מלא</button>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #e9ecef; margin: 20px 0;">
+
+                    <div class="panel-title">3. ניהול שגיאות ותחזוקה</div>
+                    <div class="flex-row" style="align-items:center;">
+                        <label style="font-size: 13px; cursor: pointer; color: #007bff; font-weight: bold; flex: 1.5;">
+                            <input type="checkbox" id="symmetryMode"> 🪞 סימטריה למשבצות שחורות
+                        </label>
+                        <button class="btn-red" style="flex: 1;" onclick="runHeatmap()">🔥 סרוק מפת חום</button>
+                        <button id="btnAutoFix" class="btn-dark" style="display: none; flex: 1;" onclick="autoFixHeatmap()">🛠️ חסום שגיאות</button>
+                    </div>
+                </div>
+
+                <div id="cellEditorPanel" class="app-panel cell-editor">
+                    <div class="sheet-handle"></div>
+                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div class="panel-title" style="margin:0; border:none; padding:0; color:#0c5460;">4. עורך הגדרות (בחר משבצת)</div>
+                        <button class="btn-purple" style="padding: 6px 12px; font-size: 12px;" onclick="openWikiModal()">✨ חולל הגדרה (ויקי-סוכן)</button>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top:10px;">
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" id="ceText1" placeholder="הגדרה 1..." style="flex: 2; margin: 0;" oninput="updateActiveCellFromPanel()">
+                            <select id="ceArrow1" style="flex: 1; margin: 0;" onchange="updateActiveCellFromPanel()">
+                                <option value="">ללא חץ</option>
+                                <option value="→">→ ימינה</option>
+                                <option value="←">← שמאלה</option>
+                                <option value="↓">↓ למטה</option>
+                                <option value="↑">↑ למעלה</option>
+                                <option value="↙">↙ אלכסון ש-מ</option>
+                                <option value="↘">↘ אלכסון י-מ</option>
+                                <option value="↖">↖ אלכסון ש-ע</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" id="ceText2" placeholder="הגדרה 2 (לאותה משבצת)..." style="flex: 2; margin: 0;" oninput="updateActiveCellFromPanel()">
+                            <select id="ceArrow2" style="flex: 1; margin: 0;" onchange="updateActiveCellFromPanel()">
+                                <option value="">ללא חץ</option>
+                                <option value="→">→ ימינה</option>
+                                <option value="↓">↓ למטה</option>
+                                <option value="↙">↙ אלכסון</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn-red" style="width: 100%; margin-top: 10px;" onclick="convertCellToEmpty()">בטל הגדרות וחזור למשבצת רגילה</button>
+                </div>
+
             </div>
 
-            <div class="cell-editor" id="cellEditorPanel">
-                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div style="font-weight: bold; color: #0c5460;">עורך הגדרות (בחר משבצת בלוח):</div>
-                    <button class="btn-purple" style="padding: 5px 10px; font-size: 12px;" onclick="openWikiModal()">✨ חולל הגדרה מהרשת (ויקי-סוכן)</button>
+            <div class="board-area">
+                <div class="grid-wrapper" onscroll="updateFloatingUI()">
+                    <div id="grid"></div>
                 </div>
-                <textarea id="ceText" placeholder="הקלד פה את ההגדרה (או השתמש בויקי-סוכן)..." oninput="updateActiveCellFromPanel()"></textarea>
-                <div style="display: flex; gap: 5px; width: 100%;">
-                    <select id="ceArrow1" onchange="updateActiveCellFromPanel()">
-                        <option value="">ללא חץ 1</option>
-                        <option value="→">→ (ימינה)</option>
-                        <option value="←">← (שמאלה)</option>
-                        <option value="↓">↓ (למטה)</option>
-                        <option value="↑">↑ (למעלה)</option>
-                        <option value="↙">↙ (אלכסון)</option>
-                        <option value="↘">↘ (אלכסון ימין למטה)</option>
-                        <option value="↖">↖ (אלכסון שמאל למעלה)</option>
-                    </select>
-                    <select id="ceArrow2" onchange="updateActiveCellFromPanel()">
-                        <option value="">ללא חץ 2</option>
-                        <option value="→">→ (ימינה)</option>
-                        <option value="↓">↓ (למטה)</option>
-                        <option value="↙">↙ (אלכסון)</option>
-                    </select>
-                </div>
-                <button class="btn-red" style="width: 100%;" onclick="convertCellToEmpty()">בטל הגדרה ממשבצת</button>
+            </div>
+            
+            <div class="app-panel btn-group" style="margin-top: 20px;">
+                <button class="btn-green" onclick="addRow(true)">⬆️ שורה</button>
+                <button class="btn-green" onclick="addRow(false)">⬇️ שורה</button>
+                <button class="btn-green" onclick="addCol(true)">➡️ עמודה</button>
+                <button class="btn-green" onclick="addCol(false)">⬅️ עמודה</button>
+                <span style="border-left: 2px solid #ccc; margin: 0 10px; display:inline-block; height:30px;" class="hide-mobile"></span>
+                <button class="btn-outline" style="font-weight:bold; color:var(--primary);" onclick="undoAction()">↩️ בטל פעולה</button>
+                <button class="btn-outline" onclick="saveState()">💾 שמור עותק</button>
+                <button class="btn-outline" onclick="loadState()">📂 טען</button>
+                <button class="btn-outline" onclick="printEmpty()">🖨️ הדפס</button>
+                <button class="btn-outline" style="color: #dc3545;" onclick="clearGrid()">🗑️ נקה הכל</button>
+                <span style="border-left: 2px solid #ccc; margin: 0 10px; display:inline-block; height:30px;" class="hide-mobile"></span>
+                <button class="btn-gold" onclick="exportToDigital()">📱 ייצא משחק לנייד</button>
             </div>
 
-            <div class="flex-row">
-                <div class="flex-col" style="flex: 1;">
-                    <select id="activeCategoryFilter" style="margin-bottom: 0;">
-                        <option value="ALL">מכל הקטגוריות</option>
-                    </select>
-                </div>
-                <button class="btn-dark" style="flex: 1.5;" onclick="searchPatternInDB()">🔍 מנתח חללים (מציע)</button>
-                <button class="btn-orange" style="flex: 1.5;" onclick="suggestQualityWords()">💡 הצע מילים (יועץ)</button>
-                <button class="btn-purple" style="flex: 2;" onclick="generateCrossword()">✨ מילוי לוח אוטומטי (AutoFill)</button>
-            </div>
         </div>
 
-        <div id="suggestionsPanel">
-            <h3 id="suggestionsTitle">היועץ החכם מציע:</h3>
-            <div style="margin-bottom: 10px; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
-                <label style="font-size: 13px; cursor: pointer; font-weight: bold; color: #007bff;">
-                    <input type="checkbox" id="allowPartialSlots" checked> 
-                    אפשר הצעת מילים קצרות (יציב בלוק שחור אוטומטית בסוף המילה)
-                </label>
-            </div>
-            <div id="suggestionsList"></div>
-        </div>
+        <div id="dbView" class="view-section">
+            <div class="db-container">
+                <div id="starterPackDiv" style="width: 100%; text-align: center; margin-bottom: 20px; display: none;">
+                    <button class="btn-gold w-100" style="padding: 20px; border-radius: 12px; font-weight:bold;" onclick="loadStarterPack()">
+                        🎁 המאגר שלך ריק! לחץ כאן לשאיבת מאגר מקצועי בחינם (כ-24,000 מילים)
+                    </button>
+                </div>
 
-        <div class="grid-wrapper">
-            <div id="grid"></div>
-        </div>
-        
-        <div class="panel-box btn-group">
-            <button class="btn-green" onclick="addRow(true)">⬆️ שורה</button>
-            <button class="btn-green" onclick="addRow(false)">⬇️ שורה</button>
-            <button class="btn-green" onclick="addCol(true)">➡️ עמודה</button>
-            <button class="btn-green" onclick="addCol(false)">⬅️ עמודה</button>
-            <button class="btn-outline" style="width: 100%;" onclick="printEmpty()">🖨️ הדפס PDF</button>
-            <button style="background-color: #20c997; color: white; width: 100%; border:none; border-radius:5px; padding:10px; font-weight:bold;" onclick="exportToDigital()">📱 ייצא משחק דיגיטלי לטלפון</button>
-            <button class="btn-outline" onclick="saveState()">💾 שמור לוח</button>
-            <button class="btn-outline" onclick="loadState()">📂 טען לוח</button>
-            <button class="btn-red" onclick="clearGrid()">🗑️ נקה לוח רייק</button>
+                <div class="app-panel" style="display:block; border-radius:8px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap:10px; align-items:center;">
+                        <div>
+                            <span id="stat-total" style="font-weight:bold; font-size:16px;">סה"כ מילים: 0</span>
+                            <span id="stat-avg" style="color: #6c757d; margin: 0 15px;">ציון ממוצע: 0</span>
+                            <span id="stat-cats" style="color: #007bff; font-weight:bold;">קטגוריות: 0</span>
+                        </div>
+                        <button class="btn-red" style="padding: 5px 10px; font-size: 12px;" onclick="clearEntireDatabase()">מחק את כל המאגר</button>
+                    </div>
+                </div>
+
+                <div class="app-panel" style="display:block; border-radius:8px; margin-bottom: 20px;">
+                    <div class="panel-title">ניהול קטגוריות</div>
+                    <div id="categoryManagerList" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+                </div>
+                
+                <div class="flex-row">
+                    <div class="app-panel flex-col" style="margin-bottom:0;">
+                        <div class="panel-title">ייבוא מהמחשב (TXT/CSV)</div>
+                        <input type="text" id="fileCatInput" placeholder="שם הקטגוריה (אופציונלי)">
+                        <label style="font-size: 12px; display:block; margin-bottom:10px;">
+                            <input type="checkbox" id="skipLongWords" checked> סנן מושגים של מעל 3 מילים
+                        </label>
+                        <input type="file" id="fileInput" accept=".txt,.csv" onchange="importFileToDatabase()" multiple>
+                    </div>
+
+                    <div class="app-panel flex-col" style="margin-bottom:0;">
+                        <div class="panel-title">הוספה ידנית</div>
+                        <input type="text" id="addWordInput" placeholder="מילה (או מילים עם רווח)">
+                        <input type="text" id="addDefInput" placeholder="הגדרה (אופציונלי)">
+                        <input type="text" id="addCatInput" placeholder="קטגוריה">
+                        <button class="btn-green w-100" onclick="addWordsToDatabase()">➕ הוסף למאגר</button>
+                    </div>
+                </div>
+
+                <div class="app-panel" style="display:block; margin-top: 20px;">
+                    <div class="panel-title">חיפוש ועריכה</div>
+                    <input type="text" id="searchDictInput" placeholder="חפש מילה לעריכה..." onkeyup="updateDictUI()">
+                    <div class="dict-table-container">
+                        <table id="dictTable">
+                            <thead><tr><th>מילה</th><th>נקי</th><th>הגדרה</th><th>קטגוריה</th><th>ציון</th><th>פעולות</th></tr></thead>
+                            <tbody id="dictTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-
-    <div id="tab-dictionary" class="tab-content">
-        <h1>מנהל המאגר</h1>
-        
-        <div id="starterPackDiv" style="width: 100%; text-align: center; margin-bottom: 20px; display: none;">
-            <button class="btn-gold" style="width: 100%; padding: 15px;" onclick="loadStarterPack()">
-                🎁 המאגר שלך ריק! לחץ כאן לשאיבת המאגר המקצועי מהענן (יבוא 26 קבצים אוטומטית)
-            </button>
-        </div>
-
-        <div class="dict-stats">
-            <span id="stat-total">סה"כ מילים: 0</span>
-            <span id="stat-avg">ציון ממוצע: 0</span>
-            <span id="stat-cats">קטגוריות: 0</span>
-            <button class="btn-red" style="padding: 5px 10px; font-size: 12px; margin-top: 10px;" onclick="clearEntireDatabase()">מחק את כל המאגר</button>
-        </div>
-        
-        <div class="flex-row">
-            <div class="panel-box flex-col" style="margin-bottom:0;">
-                <div class="panel-title">ייבוא מקבצים מהמחשב (TXT)</div>
-                <div style="display: flex; gap: 10px; flex-direction: column; margin-bottom: 10px;">
-                    <input type="text" id="fileCatInput" placeholder="שם הקטגוריה (אופציונלי)">
-                    <label style="font-size: 12px;">
-                        <input type="checkbox" id="skipLongWords" checked> סנן מושגים של מעל 3 מילים
-                    </label>
-                </div>
-                <div class="file-upload" style="margin-bottom: 0;">
-                    <input type="file" id="fileInput" accept=".txt,.csv" onchange="importFileToDatabase()" multiple>
-                </div>
-            </div>
-
-            <div class="panel-box flex-col" style="margin-bottom:0;">
-                <div class="panel-title">הוספה ידנית</div>
-                <input type="text" id="addWordInput" placeholder="מילה (או עם רווחים: 'בת הים הקטנה')">
-                <input type="text" id="addDefInput" placeholder="הגדרה (אופציונלי)">
-                <input type="text" id="addCatInput" placeholder="קטגוריה">
-                <button class="btn-green" onclick="addWordsToDatabase()">➕ הוסף למאגר</button>
-            </div>
-        </div>
-
-        <div class="panel-box">
-            <div class="panel-title">תוכן המאגר</div>
-            <div style="margin-bottom: 10px;">
-                <input type="text" id="searchDictInput" placeholder="חפש מילה לעריכה..." onkeyup="updateDictUI()">
-            </div>
-            <div class="dict-table-container">
-                <table id="dictTable">
-                    <thead><tr><th>מילה</th><th>חיפוש (נקי)</th><th>הגדרה</th><th>קטגוריה</th><th>ציון</th><th>פעולות</th></tr></thead>
-                    <tbody id="dictTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="editModal" class="modal-overlay">
-        <div class="modal-content">
+    <div id="editModal" class="modal-center-overlay">
+        <div class="modal-center-content">
             <h3 style="margin-top:0;">עריכת מושג</h3>
-            <label>מילה מקורית:</label>
+            <label style="font-size:12px; font-weight:bold;">מילה מקורית:</label>
             <input type="text" id="editOriginalInput">
-            <label>הגדרה:</label>
+            <label style="font-size:12px; font-weight:bold;">הגדרה:</label>
             <textarea id="editDefInput" rows="3"></textarea>
-            <label>קטגוריה:</label>
+            <label style="font-size:12px; font-weight:bold;">קטגוריה:</label>
             <input type="text" id="editCatInput">
             <input type="hidden" id="editKeyInput">
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
@@ -278,25 +439,156 @@
         </div>
     </div>
 
-    <div id="wikiModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0; color:#6f42c1;">✨ ויקי-סוכן</h3>
-            <p style="font-size: 13px; color: #555;">הקלד ערך. אנו נשאב ונתמצת הגדרה מוויקיפדיה או ויקינתונים.</p>
+    <div id="wikiModal" class="modal-center-overlay">
+        <div class="modal-center-content">
+            <h3 style="margin-top:0; color:#6f42c1;">✨ ויקי-סוכן חכם</h3>
+            <p style="font-size: 13px; color: #555;">מקד אותי בערך (למשל: "התחלה (סרט)"). אשאב ואנקה עבורך את ההגדרה מויקיפדיה.</p>
             <input type="text" id="wikiSearchTerm" placeholder="איזו מילה לחפש?" onkeyup="if(event.key === 'Enter') executeWikiSearch()">
-            <button class="btn-dark" style="width: 100%; margin-bottom: 15px;" onclick="executeWikiSearch()">🔍 חפש ותמצת</button>
+            <button class="btn-dark w-100" style="margin-bottom: 15px;" onclick="executeWikiSearch()">🔍 חפש ותמצת ברשת</button>
             
-            <label style="font-size: 13px; font-weight: bold;">תצוגה מקדימה (ניתן לערוך):</label>
-            <textarea id="wikiPreview" rows="4" placeholder="ההגדרה תופיע כאן..."></textarea>
+            <label style="font-size: 13px; font-weight: bold;">הגדרה שחולצה (ניתנת לעריכה):</label>
+            <textarea id="wikiPreview" rows="4" placeholder="התשובה תופיע כאן..."></textarea>
             
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
                 <button class="btn-outline" onclick="closeWikiModal()">ביטול</button>
-                <button class="btn-purple" onclick="applyWikiClue()">הזרק ללוח</button>
+                <button class="btn-purple" onclick="applyWikiClue()">הזרק לתא בלוח</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ================== מנוע המאגר (DB) ==================
+        let isMobile = window.innerWidth <= 768;
+        window.addEventListener('resize', () => { isMobile = window.innerWidth <= 768; });
+        window.addEventListener('scroll', updateFloatingUI); 
+
+        // --- מנגנון Undo ---
+        let undoStack = [];
+        
+        function saveStateToUndo() {
+            syncLogicFromDOM();
+            const state = {
+                visual: [],
+                logic: gridLogic.map(row => [...row]),
+                placed: JSON.parse(JSON.stringify(placedWordsInfo)),
+                r: rows, c: cols
+            };
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    state.visual.push({ 
+                        text: cells[r][c].innerText, 
+                        isBlack: cells[r][c].classList.contains('black'), 
+                        isDef: cells[r][c].classList.contains('definition'), 
+                        isLocked: cells[r][c].classList.contains('locked')
+                    });
+                }
+            }
+            undoStack.push(state);
+            if (undoStack.length > 20) undoStack.shift(); 
+        }
+
+        function undoAction() {
+            if (undoStack.length === 0) return alert("אין פעולות קודמות לביטול.");
+            let state = undoStack.pop();
+            rows = state.r; cols = state.c;
+            initGrid();
+            gridLogic = state.logic; placedWordsInfo = state.placed;
+            let i = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    cells[r][c].innerText = state.visual[i].text;
+                    if (state.visual[i].isBlack) { cells[r][c].classList.add('black'); cells[r][c].contentEditable = false; }
+                    if (state.visual[i].isDef) cells[r][c].classList.add('definition');
+                    if (state.visual[i].isLocked) cells[r][c].classList.add('locked');
+                    i++;
+                }
+            }
+            closeFloatingUI();
+        }
+
+        function switchAppTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById(tabId + 'View').classList.add('active');
+            if(isMobile) {
+                document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('active'));
+                if(tabId === 'editor') document.getElementById('navEditor').classList.add('active');
+                if(tabId === 'db') document.getElementById('navDb').classList.add('active');
+            } else {
+                document.querySelectorAll('.desktop-tabs button').forEach(b => b.classList.remove('active'));
+                if(tabId === 'editor') document.getElementById('deskNavEditor').classList.add('active');
+                if(tabId === 'db') document.getElementById('deskNavDb').classList.add('active');
+            }
+            closeBottomSheets();
+            closeFloatingUI();
+        }
+
+        function openBottomSheet(sheetId, navId) {
+            if(!isMobile) return; 
+            document.getElementById('sheetOverlay').classList.add('active');
+            document.querySelectorAll('.app-panel').forEach(p => p.classList.remove('active'));
+            let sheet = document.getElementById(sheetId);
+            if(sheet) sheet.classList.add('active');
+            if(navId) {
+                document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('active'));
+                document.getElementById(navId).classList.add('active');
+            }
+        }
+
+        function closeBottomSheets() {
+            if(!isMobile) return;
+            document.getElementById('sheetOverlay').classList.remove('active');
+            document.querySelectorAll('.app-panel').forEach(p => p.classList.remove('active'));
+            if (document.getElementById('editorView').classList.contains('active')) {
+                document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('active'));
+                document.getElementById('navEditor').classList.add('active');
+            }
+        }
+
+        function updateFloatingUI() {
+            if(currentHighlightedCells.length === 0) return closeFloatingUI();
+            
+            const tb = document.getElementById('floatingToolbar');
+            const res = document.getElementById('floatingResults');
+
+            const first = currentHighlightedCells[currentHighlightedCells.length - 1].getBoundingClientRect(); 
+            const last = currentHighlightedCells[0].getBoundingClientRect(); 
+
+            let centerX = (first.left + last.right) / 2;
+            let topY = Math.min(first.top, last.top);
+            let bottomY = Math.max(first.bottom, last.bottom);
+
+            tb.style.display = 'flex';
+            
+            let tbWidth = tb.offsetWidth || 280;
+            let leftPos = centerX;
+            if(leftPos - (tbWidth/2) < 10) leftPos = (tbWidth/2) + 10;
+            if(leftPos + (tbWidth/2) > window.innerWidth - 10) leftPos = window.innerWidth - (tbWidth/2) - 10;
+
+            tb.style.left = leftPos + 'px';
+            tb.style.top = Math.max(10, topY - 55) + 'px';
+
+            if (res.style.display === 'block') {
+                let resWidth = res.offsetWidth || 320;
+                let resLeft = centerX;
+                if(resLeft - (resWidth/2) < 10) resLeft = (resWidth/2) + 10;
+                if(resLeft + (resWidth/2) > window.innerWidth - 10) resLeft = window.innerWidth - (resWidth/2) - 10;
+                res.style.left = resLeft + 'px';
+
+                if (bottomY + 10 + 250 > window.innerHeight) {
+                    res.style.top = Math.max(10, topY - (res.offsetHeight || 300) - 10) + 'px';
+                } else {
+                    res.style.top = (bottomY + 10) + 'px'; 
+                }
+            }
+        }
+
+        function closeFloatingUI() {
+            document.getElementById('floatingToolbar').style.display = 'none';
+            document.getElementById('floatingResults').style.display = 'none';
+        }
+        function closeFloatingResultsOnly() {
+            document.getElementById('floatingResults').style.display = 'none';
+        }
+
         let smartDB = {}; 
         
         function cleanWord(word) {
@@ -306,11 +598,9 @@
             return str.replace(/[םןץףך]/g, match => finalsMap[match]);
         }
 
-        // חישוב מילים מרובות והוספת (2, 3) להגדרה
         function getWordLengthsStr(originalWord) {
             let parts = originalWord.trim().split(/\s+/);
             if(parts.length > 1) {
-                // סופר רק אותיות בעברית ואנגלית, מתעלם מפסיקים גרשיים וכו'
                 let lens = parts.map(p => p.replace(/[^א-תa-zA-Z]/g, '').length).filter(l => l > 0).join(', ');
                 if(lens) return ` (${lens})`;
             }
@@ -342,7 +632,6 @@
             const data = localStorage.getItem('crosswordSmartDB'); 
             if(data) { smartDB = JSON.parse(data); }
             updateDictUI(); 
-            
             if(Object.keys(smartDB).length === 0) {
                 document.getElementById('starterPackDiv').style.display = 'block';
             } else {
@@ -366,7 +655,6 @@
             ];
             
             let totalAdded = 0; let filesLoaded = 0;
-
             for (let fileName of filesToLoad) {
                 try {
                     const url = repoBaseUrl + encodeURIComponent(fileName);
@@ -381,17 +669,13 @@
                     totalAdded += countForFile; filesLoaded++;
                 } catch (err) { console.error("Failed to fetch: " + fileName); }
             }
-
             saveDB(); btn.innerText = originalText; btn.disabled = false;
             if (totalAdded > 0) {
                 alert(`נשאבו ${totalAdded} מילים מתוך ${filesLoaded} קבצים ב-GitHub. המאגר מוכן לעבודה!`);
                 document.getElementById('starterPackDiv').style.display = 'none';
-            } else {
-                alert("אופס, לא הצלחנו למשוך את המילים. ודא שהעלית את כל הקבצים ל-GitHub בדיוק בשמות שרשמת לי.");
-            }
+            } else { alert("אופס, לא הצלחנו למשוך את המילים מ-GitHub."); }
         }
 
-        // מנקה הויקיפדיה + הוספת (2, 3) למילים מרובות
         function insertToDB(originalLine, def, category) {
             let originalWord = originalLine.trim();
             if (originalWord.length < 2) return false;
@@ -407,19 +691,11 @@
             let skipLong = document.getElementById('skipLongWords') ? document.getElementById('skipLongWords').checked : false;
             if(skipLong && originalWord.split(/\s+/).length > 3) return false;
 
-            // הוספת אורכי המילים בסוגריים להגדרה (אם המילה מורכבת מרווחים)
             let lengthsStr = getWordLengthsStr(originalWord);
-            if (lengthsStr !== "" && !autoDef.includes(lengthsStr)) {
-                autoDef += lengthsStr;
-            }
+            if (lengthsStr !== "" && !autoDef.includes(lengthsStr)) autoDef += lengthsStr;
 
             if (!smartDB[cWord]) {
-                smartDB[cWord] = { 
-                    original: originalWord, 
-                    def: autoDef || `הגדרה ל-${originalWord}`, 
-                    category: category || "כללי", 
-                    score: calculateCrosswordScore(cWord, originalWord) 
-                };
+                smartDB[cWord] = { original: originalWord, def: autoDef || `הגדרה ל-${originalWord}`, category: category || "כללי", score: calculateCrosswordScore(cWord, originalWord) };
                 return true;
             }
             return false;
@@ -486,6 +762,57 @@
             saveDB(); closeEditModal();
         }
 
+        function renderCategoryManager(categories) {
+            const container = document.getElementById('categoryManagerList');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            let catCounts = {};
+            for(let key in smartDB) {
+                let cat = smartDB[key].category;
+                catCounts[cat] = (catCounts[cat] || 0) + 1;
+            }
+
+            for(let cat in catCounts) {
+                let div = document.createElement('div');
+                div.className = 'cat-manager-item';
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <strong>${cat}</strong> 
+                        <span style="color: #6c757d; font-size:12px;">(${catCounts[cat]} מילים)</span>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="action-btn btn-edit" onclick="renameCategory('${cat}')">✏️ שנה שם</button>
+                        <button class="action-btn btn-delete" onclick="deleteCategory('${cat}')">🗑️ מחק הכל</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        function renameCategory(oldName) {
+            let newName = prompt(`שנה את שם הקטגוריה "${oldName}" ל:`, oldName);
+            if(!newName || newName.trim() === "" || newName === oldName) return;
+            newName = newName.trim();
+            for(let key in smartDB) {
+                if(smartDB[key].category === oldName) {
+                    smartDB[key].category = newName;
+                }
+            }
+            saveDB();
+        }
+
+        function deleteCategory(catName) {
+            if(confirm(`אזהרה: פעולה זו תמחק את כל המילים השייכות לקטגוריה "${catName}"! האם להמשיך?`)) {
+                for(let key in smartDB) {
+                    if(smartDB[key].category === catName) {
+                        delete smartDB[key];
+                    }
+                }
+                saveDB();
+            }
+        }
+
         function updateDictUI() {
             const tbody = document.getElementById('dictTableBody');
             const filterDropdown = document.getElementById('activeCategoryFilter');
@@ -503,7 +830,7 @@
                     let entry = smartDB[cWord]; let tr = document.createElement('tr');
                     let scoreColor = '#dc3545'; if(entry.score >= 70) scoreColor = '#28a745'; else if(entry.score >= 40) scoreColor = '#fd7e14';
                     tr.innerHTML = `
-                        <td>${entry.original}</td><td style="color:#aaa; font-size:11px;">${cWord}</td>
+                        <td style="font-weight:bold;">${entry.original}</td><td style="color:#6c757d; font-size:11px;">${cWord}</td>
                         <td style="max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${entry.def}">${entry.def}</td>
                         <td><span class="cat-tag">${entry.category}</span></td><td style="font-weight:bold; color: ${scoreColor}">${entry.score}</td>
                         <td><button class="action-btn btn-edit" onclick="openEditModal('${cWord}')">✏️</button><button class="action-btn btn-delete" onclick="deleteWord('${cWord}')">🗑️</button></td>
@@ -514,16 +841,20 @@
             
             for (let key in smartDB) { totalScore += smartDB[key].score; categories.add(smartDB[key].category); count++; }
             let stTotal = document.getElementById('stat-total');
-            if(stTotal) {
-                stTotal.innerText = `סה"כ מילים: ${count}`;
-                document.getElementById('stat-avg').innerText = `ציון ממוצע: ${count > 0 ? Math.round(totalScore/count) : 0}`;
-                document.getElementById('stat-cats').innerText = `קטגוריות: ${categories.size}`;
-            }
+            if(stTotal) stTotal.innerText = `סה"כ מילים: ${count}`;
+            let stAvg = document.getElementById('stat-avg');
+            if(stAvg) stAvg.innerText = `ציון ממוצע: ${count > 0 ? Math.round(totalScore/count) : 0}`;
+            let stCats = document.getElementById('stat-cats');
+            if(stCats) stCats.innerText = `קטגוריות: ${categories.size}`;
 
-            let currentFilter = filterDropdown.value;
-            filterDropdown.innerHTML = '<option value="ALL">מכל הקטגוריות</option>';
-            categories.forEach(c => { let opt = document.createElement('option'); opt.value = c; opt.innerText = c; filterDropdown.appendChild(opt); });
-            if(categories.has(currentFilter)) filterDropdown.value = currentFilter;
+            renderCategoryManager(categories);
+
+            let currentFilter = filterDropdown ? filterDropdown.value : "ALL";
+            if(filterDropdown) {
+                filterDropdown.innerHTML = '<option value="ALL">שבץ מכל הקטגוריות</option>';
+                categories.forEach(c => { let opt = document.createElement('option'); opt.value = c; opt.innerText = c; filterDropdown.appendChild(opt); });
+                if(categories.has(currentFilter)) filterDropdown.value = currentFilter;
+            }
             
             if(Object.keys(smartDB).length === 0) {
                 document.getElementById('starterPackDiv').style.display = 'block';
@@ -532,14 +863,6 @@
             }
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active'); document.getElementById('tab-' + tabId).classList.add('active');
-        }
-
-
-        // ================== מנוע חיפוש ריילי ==================
         const directInput = document.getElementById('directWordInput');
         const autoList = document.getElementById('autocompleteList');
 
@@ -556,8 +879,6 @@
         });
         document.addEventListener('click', function (e) { if (e.target !== directInput) { autoList.innerHTML = ''; } });
 
-
-        // ================== מנוע הלוח והעורך ==================
         const gridElement = document.getElementById('grid');
         let rows = 15; let cols = 15;
         let cells = []; let activeCell = null;
@@ -578,10 +899,14 @@
                 document.querySelectorAll('.cell').forEach(i => i.dataset.focused = 'false');
                 this.dataset.focused = 'true';
                 let {r, c} = getCellCoords(this);
-                if(r > -1) { activeCell = this; highlightSlot(r, c, currentDir); syncPanelWithCell(this); }
+                if(r > -1) { 
+                    activeCell = this; highlightSlot(r, c, currentDir); syncPanelWithCell(this); 
+                    updateFloatingUI(); 
+                }
             });
 
             cell.addEventListener('dblclick', function() {
+                saveStateToUndo();
                 let {r, c} = getCellCoords(this);
                 if(r > -1) toggleBlackBlock(r, c);
             });
@@ -589,6 +914,7 @@
             cell.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 if(this.classList.contains('black') || this.classList.contains('definition')) return;
+                saveStateToUndo();
                 this.classList.toggle('locked');
             });
 
@@ -608,41 +934,67 @@
         const arrowChars = ['→','←','↓','↑','↙','↖','↘'];
         
         function syncPanelWithCell(cell) {
-            if(!cell || !cell.classList.contains('definition')) {
-                document.getElementById('ceText').value = '';
-                document.getElementById('ceArrow1').value = ''; document.getElementById('ceArrow2').value = '';
-                return;
+            document.getElementById('ceText1').value = '';
+            document.getElementById('ceArrow1').value = ''; 
+            document.getElementById('ceText2').value = '';
+            document.getElementById('ceArrow2').value = ''; 
+            if(!cell || !cell.classList.contains('definition')) return;
+
+            let text = cell.innerText; 
+            let parts = text.split('\n---\n');
+            
+            function extract(p) {
+                let extractedText = ""; let arrow = "";
+                if(!p) return {text: "", arrow: ""};
+                for(let char of p) {
+                    if(arrowChars.includes(char)) arrow = char;
+                    else if(char !== '\n') extractedText += char;
+                }
+                return {text: extractedText.trim(), arrow: arrow};
             }
-            let text = cell.innerText; let extractedText = ""; let arrows = [];
-            for(let char of text) {
-                if(arrowChars.includes(char)) arrows.push(char);
-                else if(char !== '\n') extractedText += char;
+            
+            let ext1 = extract(parts[0]);
+            document.getElementById('ceText1').value = ext1.text;
+            document.getElementById('ceArrow1').value = ext1.arrow;
+            
+            if(parts[1]) {
+                let ext2 = extract(parts[1]);
+                document.getElementById('ceText2').value = ext2.text;
+                document.getElementById('ceArrow2').value = ext2.arrow;
             }
-            document.getElementById('ceText').value = extractedText.trim();
-            document.getElementById('ceArrow1').value = arrows[0] || ''; document.getElementById('ceArrow2').value = arrows[1] || '';
         }
 
         function updateActiveCellFromPanel() {
-            if(!activeCell) return alert("לחץ קודם על משבצת בלוח כדי שתהפוך להגדרה.");
-            let text = document.getElementById('ceText').value.trim();
-            let a1 = document.getElementById('ceArrow1').value; let a2 = document.getElementById('ceArrow2').value;
-            if(text === '' && a1 === '' && a2 === '') return;
+            if(!activeCell) return alert("לחץ קודם על משבצת ריקה/שחורה בלוח כדי להפוך אותה להגדרה.");
             
+            let t1 = document.getElementById('ceText1').value.trim();
+            let a1 = document.getElementById('ceArrow1').value; 
+            let t2 = document.getElementById('ceText2').value.trim();
+            let a2 = document.getElementById('ceArrow2').value; 
+
+            if(t1 === '' && a1 === '' && t2 === '' && a2 === '') return;
+            
+            saveStateToUndo();
             activeCell.classList.add('definition'); activeCell.classList.remove('black', 'locked', 'heatmap-error'); activeCell.contentEditable = false;
-            let content = text; if(a1) content += '\n' + a1; if(a2) content += '\n' + a2;
+            
+            let content = "";
+            if(t1 || a1) content += t1 + (a1 ? '\n' + a1 : '');
+            if(t2 || a2) content += (content ? '\n---\n' : '') + t2 + (a2 ? '\n' + a2 : '');
+            
             activeCell.innerText = content;
         }
 
         function convertCellToEmpty() {
             if(!activeCell) return;
+            saveStateToUndo();
             activeCell.classList.remove('definition'); activeCell.innerText = ''; activeCell.contentEditable = true;
             syncPanelWithCell(null);
         }
 
-        // כפתור מחיקת מילה מסומנת מהלוח!
         function clearHighlightedSlot() {
-            if(currentHighlightedCells.length === 0) return alert("סמן קודם מילה או חלל בלוח שתרצה לנקות.");
-            if(confirm("בטוח שתרצה למחוק את כל האותיות המסומנות בצהוב?")) {
+            if(currentHighlightedCells.length === 0) return alert("סמן קודם מילה או מסלול בלוח שתרצה לנקות.");
+            if(confirm("בטוח שתרצה למחוק את כל האותיות במסלול המסומן בצהוב?")) {
+                saveStateToUndo();
                 currentHighlightedCells.forEach(cell => {
                     cell.innerText = '';
                     cell.classList.remove('locked', 'just-added', 'definition', 'heatmap-error');
@@ -650,19 +1002,16 @@
                     gridLogic[coords.r][coords.c] = '';
                 });
                 
-                // מנקה גם מרישום המילים ששובצו, כדי שמנוע האוטופיל ידע שהמקום שוב פנוי
                 if (currentHighlightedCells.length > 0) {
                     let startCoords = getCellCoords(currentHighlightedCells[0]);
                     placedWordsInfo = placedWordsInfo.filter(info => {
                         return !(info.r === startCoords.r && info.c === startCoords.c && info.isHorizontal === (currentDir === 'horizontal'));
                     });
                 }
-                saveState(); // שומר את הלוח הנקי בזיכרון
+                closeFloatingUI();
             }
         }
 
-
-        // ================== מודאל ויקי-סוכן משודרג ==================
         function openWikiModal() {
             if(!activeCell) return alert("לחץ קודם על המשבצת הריקה בלוח שתרצה להפוך להגדרה.");
             
@@ -694,11 +1043,8 @@
             document.getElementById('wikiPreview').value = '';
             document.getElementById('wikiModal').style.display = 'flex';
             
-            if (prefillWord !== "") {
-                executeWikiSearch();
-            } else {
-                document.getElementById('wikiSearchTerm').focus();
-            }
+            if (prefillWord !== "") { executeWikiSearch(); } 
+            else { document.getElementById('wikiSearchTerm').focus(); }
         }
 
         function closeWikiModal() { document.getElementById('wikiModal').style.display = 'none'; }
@@ -711,7 +1057,6 @@
             previewEl.value = "🔍 מחפש הגדרה חכמה ברשת, אנא המתן...";
             
             try {
-                // חיפוש פתוח (Open Search) כדי לא להיות מקובע על השם המדויק
                 let searchUrl = `https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(targetWord)}&limit=1&namespace=0&format=json&origin=*`;
                 let searchRes = await fetch(searchUrl);
                 let searchData = await searchRes.json();
@@ -748,11 +1093,8 @@
                 }
 
                 if (finalClue !== "") {
-                    // הוספת (2, 3) גם בויקי-סוכן!
                     let lengthsStr = getWordLengthsStr(targetWord);
-                    if (lengthsStr !== "" && !finalClue.includes(lengthsStr)) {
-                        finalClue += lengthsStr;
-                    }
+                    if (lengthsStr !== "" && !finalClue.includes(lengthsStr)) finalClue += lengthsStr;
                     previewEl.value = finalClue;
                 } else {
                     previewEl.value = "";
@@ -768,11 +1110,174 @@
         function applyWikiClue() {
             let finalClue = document.getElementById('wikiPreview').value.trim();
             if(finalClue === "") return alert("אין הגדרה להזרקה.");
-            document.getElementById('ceText').value = finalClue;
+            
+            if (activeCell && activeCell.innerText.trim().length === 1 && !arrowChars.includes(activeCell.innerText.trim()) && !activeCell.classList.contains('black')) {
+                if(!confirm("⚠️ שים לב: בחרת משבצת שמכילה אות (" + activeCell.innerText.trim() + ").\nהזרקת ההגדרה תדרוס את האות הזו!\n\nהאם להמשיך? (מומלץ לבטל, לבחור משבצת ריקה/שחורה, ואז לנסות שוב).")) {
+                    return;
+                }
+            }
+
+            document.getElementById('ceText1').value = finalClue;
             updateActiveCellFromPanel();
             closeWikiModal();
         }
-        // ===============================================================
+
+        function searchPatternInDBContext() {
+            if(currentHighlightedCells.length < 2) return alert("סמן חלל של לפחות 2 משבצות בלוח!");
+            let patternStr = ""; 
+            currentHighlightedCells.forEach(cell => {
+                let val = cell.innerText.trim();
+                if(val.length === 1 && !arrowChars.includes(val)) { patternStr += val; } else { patternStr += "."; }
+            });
+            
+            let regexStrict = new RegExp("^" + patternStr + "$"); 
+            let filterCat = document.getElementById('activeCategoryFilter').value;
+            let allowPartial = document.getElementById('allowPartialSlots').checked;
+            let slotLen = currentHighlightedCells.length;
+            let matches = [];
+
+            let startR = getCellCoords(currentHighlightedCells[0]).r;
+            let startC = getCellCoords(currentHighlightedCells[0]).c;
+            let isH = currentDir === 'horizontal';
+
+            for (let cWord in smartDB) {
+                let entry = smartDB[cWord];
+                if (filterCat !== "ALL" && entry.category !== filterCat) continue;
+                if (placedWordsInfo.some(i => i.word === cWord)) continue;
+
+                if (cWord.length === slotLen) {
+                    if (regexStrict.test(cWord)) {
+                        let res = checkPlacementRules(gridLogic, cWord, startR, startC, isH);
+                        if(res.valid) matches.push({...entry, isPartial: false});
+                    }
+                } else if (allowPartial && cWord.length >= 2 && cWord.length < slotLen) {
+                    let partialPat = "^" + patternStr.substring(0, cWord.length) + "$";
+                    if (new RegExp(partialPat).test(cWord)) {
+                        let res = checkPlacementRules(gridLogic, cWord, startR, startC, isH);
+                        if(res.valid) {
+                            let nextCell = currentHighlightedCells[cWord.length];
+                            if (nextCell && !nextCell.classList.contains('locked') && nextCell.innerText.trim() === '') {
+                                matches.push({...entry, isPartial: true, matchLen: cWord.length});
+                            }
+                        }
+                    }
+                }
+            }
+
+            const resDiv = document.getElementById('floatingResults');
+            const list = document.getElementById('floatingSuggestionsList'); 
+            document.getElementById('floatingResultsTitle').innerText = `מנתח תבנית: [ ${patternStr.replace(/\./g, '_').split('').join(' ')} ]`;
+            list.innerHTML = '';
+
+            if (matches.length === 0) { 
+                list.innerHTML = `<p>לא נמצאו התאמות במאגר לחלל זה (שאינן מפרות חוקים).</p>`; 
+            } else {
+                matches.sort((a,b) => b.score - a.score || a.original.localeCompare(b.original));
+                matches.slice(0, 30).forEach(sugg => {
+                    const item = document.createElement('div'); item.className = 'suggestion-item';
+                    let partialBadge = sugg.isPartial ? `<span style="background: var(--danger); color:white; font-size:10px; padding:2px 5px; border-radius:3px;">+שחור</span>` : '';
+                    item.innerHTML = `<div><span style="font-weight:bold; font-size:16px;">${sugg.original}</span><br><span class="score-badge">${sugg.score}</span> ${partialBadge}</div>`;
+                    const btn = document.createElement('button'); btn.className = 'btn-dark'; btn.style.padding = '8px 12px'; btn.innerText = 'שבץ!';
+                    btn.onclick = function() { injectToHighlighted(sugg.original, sugg.def, sugg.isPartial); };
+                    item.appendChild(btn); list.appendChild(item);
+                });
+            }
+
+            let manualDiv = document.createElement('div');
+            manualDiv.style.cssText = "margin-top: 15px; border-top: 1px dashed var(--gray); padding-top: 15px;";
+            manualDiv.innerHTML = `
+                <div style="font-size:12px; font-weight:bold; margin-bottom:5px;">הזנה ידנית (${currentHighlightedCells.length} תווים):</div>
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <input type="text" id="manualSlotInputContext" placeholder="..." maxlength="${currentHighlightedCells.length}" style="margin-bottom:0;">
+                    <button class="btn-outline" onclick="document.getElementById('manualSlotInputContext').value = document.getElementById('manualSlotInputContext').value.split('').reverse().join('')" title="הפוך אותיות" style="padding: 10px;">🔀</button>
+                    <button class="btn-theme" onclick="forceInjectToSlotContext()" style="white-space:nowrap;">שבץ</button>
+                </div>
+            `;
+            list.appendChild(manualDiv);
+            
+            resDiv.style.display = 'block';
+            updateFloatingUI();
+        }
+
+        function suggestQualityWordsContext() {
+            if(currentHighlightedCells.length < 2) return alert("סמן חלל של לפחות 2 משבצות!");
+            
+            let filterCat = document.getElementById('activeCategoryFilter').value;
+            let suggestions = [];
+            let isBoardEmpty = placedWordsInfo.length === 0;
+
+            let startR = getCellCoords(currentHighlightedCells[0]).r;
+            let startC = getCellCoords(currentHighlightedCells[0]).c;
+            let isH = currentDir === 'horizontal';
+            let slotLen = currentHighlightedCells.length;
+            let allowPartial = document.getElementById('allowPartialSlots').checked;
+
+            if(Object.keys(smartDB).length === 0) return alert("המאגר ריק!");
+
+            for (let cWord in smartDB) {
+                let entry = smartDB[cWord];
+                if (filterCat !== "ALL" && entry.category !== filterCat) continue; 
+                if (placedWordsInfo.some(info => info.word === cWord)) continue; 
+                
+                if (cWord.length === slotLen || (allowPartial && cWord.length >= 2 && cWord.length < slotLen)) {
+                    let res = checkPlacementRules(gridLogic, cWord, startR, startC, isH);
+                    if (res.valid && (res.intersections > 0 || isBoardEmpty)) {
+                        let isPartial = cWord.length < slotLen;
+                        let cScore = entry.score + (res.intersections * 500); 
+                        suggestions.push({word: cWord, original: entry.original, def: entry.def, int: res.intersections, score: entry.score, cScore: cScore, isPartial: isPartial});
+                    }
+                }
+            }
+
+            const resDiv = document.getElementById('floatingResults');
+            const list = document.getElementById('floatingSuggestionsList'); 
+            document.getElementById('floatingResultsTitle').innerText = `היועץ מציע לחלל זה:`;
+            list.innerHTML = '';
+
+            if (suggestions.length === 0) { list.innerHTML = `<p>אין התאמות חוקיות לחלל זה במאגר.</p>`; } 
+            else {
+                suggestions.sort((a, b) => b.cScore - a.cScore);
+                suggestions.slice(0, 20).forEach(sugg => {
+                    const item = document.createElement('div'); item.className = 'suggestion-item';
+                    let overlapText = sugg.int > 0 ? `מצליב ${sugg.int}` : "עוגן חדש";
+                    let partialBadge = sugg.isPartial ? `<span style="background: var(--danger); color:white; font-size:10px; padding:2px; border-radius:3px;">+שחור</span>` : '';
+                    item.innerHTML = `<div><span style="font-weight:bold; font-size:16px;">${sugg.original}</span><br><span class="score-badge">${sugg.score}</span><span style="font-size:11px; margin-right:5px;">(${overlapText})</span> ${partialBadge}</div>`;
+                    const btn = document.createElement('button'); btn.className = 'btn-green'; btn.style.padding = '8px 12px'; btn.innerText = 'שבץ!';
+                    
+                    btn.onclick = function() { injectToHighlighted(sugg.original, sugg.def, sugg.isPartial); };
+                    item.appendChild(btn); list.appendChild(item);
+                });
+            }
+            resDiv.style.display = 'block';
+            updateFloatingUI();
+        }
+
+        function forceInjectToSlotContext() {
+            let val = document.getElementById('manualSlotInputContext').value.trim();
+            let cWord = cleanWord(val);
+            let allowPartial = document.getElementById('allowPartialSlots').checked;
+            if(cWord.length !== currentHighlightedCells.length && !allowPartial) {
+                return alert(`המילה באורך ${cWord.length} והחלל ${currentHighlightedCells.length}.`);
+            }
+            if(cWord.length > currentHighlightedCells.length) return alert("ארוך מדי!");
+            
+            let startR = getCellCoords(currentHighlightedCells[0]).r;
+            let startC = getCellCoords(currentHighlightedCells[0]).c;
+            let isH = currentDir === 'horizontal';
+            
+            let res = checkPlacementRules(gridLogic, cWord, startR, startC, isH);
+            if (!res.valid) {
+                if (!confirm("⚠️ אזהרה: שיבוץ מילה זו כאן מפר את חוקי התשחץ (היא נדבקת למילה מקבילה, או שאין מקום להגדרה). האם בכל זאת לאלץ את השיבוץ?")) {
+                    return;
+                }
+            }
+            
+            if(!smartDB[cWord]) insertToDB(val, "", "הוזן ידנית");
+            injectToHighlighted(val, smartDB[cWord] ? smartDB[cWord].def : "", cWord.length < currentHighlightedCells.length);
+        }
+
+        function searchPatternInDB() { searchPatternInDBContext(); }
+        function suggestQualityWords() { suggestQualityWordsContext(); }
 
         function highlightSlot(r, c, dir) {
             document.querySelectorAll('.cell').forEach(cell => { cell.classList.remove('highlighted', 'active-cell'); });
@@ -788,284 +1293,72 @@
             currentHighlightedCells.forEach(cell => { if(!cell.classList.contains('active-cell')) cell.classList.add('highlighted'); });
         }
 
-        // פונקציית היפוך טקסט מילה בתיבה הידנית
-        function reverseManualInput() {
-            let el = document.getElementById('manualSlotInput');
-            el.value = el.value.split('').reverse().join('');
-        }
-
-        function searchPatternInDB() {
-            if(currentHighlightedCells.length < 2) return alert("סמן חלל של לפחות 2 משבצות בלוח!");
-            let patternStr = ""; 
-            currentHighlightedCells.forEach(cell => {
-                let val = cell.innerText.trim();
-                if(val.length === 1 && !arrowChars.includes(val)) { patternStr += val; } else { patternStr += "."; }
-            });
-            
-            let regexStrict = new RegExp("^" + patternStr + "$"); 
-            let filterCat = document.getElementById('activeCategoryFilter').value;
-            let allowPartial = document.getElementById('allowPartialSlots').checked;
-            let slotLen = currentHighlightedCells.length;
-            let matches = [];
-
-            for (let cWord in smartDB) {
-                let entry = smartDB[cWord];
-                if (filterCat !== "ALL" && entry.category !== filterCat) continue;
-                if (placedWordsInfo.some(i => i.word === cWord)) continue;
-
-                if (cWord.length === slotLen) {
-                    if (regexStrict.test(cWord)) matches.push({...entry, isPartial: false});
-                } else if (allowPartial && cWord.length >= 2 && cWord.length < slotLen) {
-                    // חיפוש למילים חלקיות: בודק אם מתאים לתחילת התבנית
-                    let partialPat = "^" + patternStr.substring(0, cWord.length) + "$";
-                    if (new RegExp(partialPat).test(cWord)) {
-                        // מוודא שהמשבצת שאחרי המילה הקצרה פנויה (כדי שיהיה אפשר לשים בה בלוק שחור)
-                        let nextCell = currentHighlightedCells[cWord.length];
-                        if (nextCell && !nextCell.classList.contains('locked') && nextCell.innerText.trim() === '') {
-                            matches.push({...entry, isPartial: true, matchLen: cWord.length});
+        function placeDefinitions(wordsInfoList, dict) {
+            wordsInfoList.forEach(info => {
+                let definition = dict[info.word];
+                if(definition) {
+                    let defPlaced = false;
+                    if(info.isHorizontal) {
+                        if(info.c > 0 && (gridLogic[info.r][info.c - 1] === '' || gridLogic[info.r][info.c - 1] === 'BLK')) { 
+                            cells[info.r][info.c - 1].innerText = definition + '\n←'; 
+                            cells[info.r][info.c - 1].classList.add('definition'); 
+                            cells[info.r][info.c - 1].classList.remove('black');
+                            gridLogic[info.r][info.c - 1] = 'DEF'; 
+                            defPlaced = true; 
+                        } 
+                        else if(!defPlaced && info.r > 0 && (gridLogic[info.r - 1][info.c] === '' || gridLogic[info.r - 1][info.c] === 'BLK')) { 
+                            cells[info.r - 1][info.c].innerText = definition + '\n↓'; 
+                            cells[info.r - 1][info.c].classList.add('definition'); 
+                            cells[info.r - 1][info.c].classList.remove('black');
+                            gridLogic[info.r - 1][info.c] = 'DEF'; 
+                            defPlaced = true; 
+                        }
+                    } else {
+                        if(info.r > 0 && (gridLogic[info.r - 1][info.c] === '' || gridLogic[info.r - 1][info.c] === 'BLK')) { 
+                            cells[info.r - 1][info.c].innerText = definition + '\n↓'; 
+                            cells[info.r - 1][info.c].classList.add('definition'); 
+                            cells[info.r - 1][info.c].classList.remove('black');
+                            gridLogic[info.r - 1][info.c] = 'DEF'; 
+                            defPlaced = true; 
+                        } 
+                        else if(!defPlaced && info.c > 0 && (gridLogic[info.r][info.c - 1] === '' || gridLogic[info.r][info.c - 1] === 'BLK')) { 
+                            cells[info.r][info.c - 1].innerText = definition + '\n←'; 
+                            cells[info.r][info.c - 1].classList.add('definition'); 
+                            cells[info.r][info.c - 1].classList.remove('black');
+                            gridLogic[info.r][info.c - 1] = 'DEF'; 
+                            defPlaced = true; 
                         }
                     }
                 }
-            }
-
-            const panel = document.getElementById('suggestionsPanel'); const list = document.getElementById('suggestionsList'); const title = document.getElementById('suggestionsTitle');
-            list.innerHTML = '';
-            let patDisp = patternStr.replace(/\./g, '_').split('').join(' ');
-            title.innerText = `מנתח החללים מחפש תבנית: [ ${patDisp} ]`;
-
-            if (matches.length === 0) { 
-                list.innerHTML = `<p>לא נמצאו מילים במאגר שמתאימות לתבנית זו.</p>`; 
-            } else {
-                matches.sort((a,b) => {
-                    if (b.score !== a.score) return b.score - a.score;
-                    return a.original.localeCompare(b.original);
-                });
-
-                matches.forEach(sugg => {
-                    const item = document.createElement('div'); item.className = 'suggestion-item';
-                    let partialBadge = sugg.isPartial ? `<span style="background: #dc3545; color:white; font-size:10px; padding:2px 5px; border-radius:3px; margin-right:5px;">תוצב משבצת שחורה</span>` : '';
-                    
-                    item.innerHTML = `<div><span class="suggestion-word">${sugg.original}</span><span class="score-badge">ציון: ${sugg.score}</span>${partialBadge}</div>`;
-                    const btn = document.createElement('button'); btn.className = 'btn-dark'; btn.style.padding = '5px 10px'; btn.style.fontSize = '12px'; btn.innerText = 'הזרק לחלל!';
-                    
-                    btn.onclick = function() { injectToHighlighted(sugg.original, sugg.def, sugg.isPartial); };
-                    item.appendChild(btn); list.appendChild(item);
-                });
-            }
-
-            let manualDiv = document.createElement('div');
-            manualDiv.style.cssText = "margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;";
-            manualDiv.innerHTML = `
-                <div style="font-size:13px; font-weight:bold; margin-bottom:5px; color:#495057;">הכנס מילה ידנית לחלל זה (${currentHighlightedCells.length} אותיות):</div>
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <input type="text" id="manualSlotInput" placeholder="הקלד כאן..." maxlength="${currentHighlightedCells.length}" style="margin-bottom:0;">
-                    <button class="btn-outline" onclick="reverseManualInput()" title="הפוך כיוון אותיות (לפתרון בעיית עברית הפוכה)" style="padding: 10px;">🔀</button>
-                    <button class="btn-theme" onclick="forceInjectToSlot()" style="white-space:nowrap;">הזרק ונעץ 📌</button>
-                </div>
-            `;
-            list.appendChild(manualDiv);
-            panel.style.display = 'block';
-        }
-
-        // הזרקה חכמה שיודעת לשים בלוק שחור בסוף מילה חלקית
-        function injectToHighlighted(originalWord, def, isPartial = false) {
-            let cWord = cleanWord(originalWord);
-            
-            for(let i=0; i<cWord.length; i++) {
-                currentHighlightedCells[i].innerText = cWord[i];
-                currentHighlightedCells[i].classList.add('locked');
-            }
-            
-            // חוסם אוטומטית אם המילה קצרה יותר מהחלל המסומן
-            if (isPartial && cWord.length < currentHighlightedCells.length) {
-                let blockCell = currentHighlightedCells[cWord.length];
-                let coords = getCellCoords(blockCell);
-                toggleBlackBlock(coords.r, coords.c, true);
-            }
-            
-            let p = getCellCoords(currentHighlightedCells[0]);
-            placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
-            let dict = {}; dict[cWord] = def; 
-            placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
-            
-            document.getElementById('suggestionsPanel').style.display = 'none'; 
-            
-            for(let i=0; i<cWord.length; i++) {
-                currentHighlightedCells[i].classList.add('just-added');
-            }
-            saveState();
-        }
-
-        function forceInjectToSlot() {
-            let val = document.getElementById('manualSlotInput').value.trim();
-            let cWord = cleanWord(val);
-            
-            let allowPartial = document.getElementById('allowPartialSlots').checked;
-            if(cWord.length !== currentHighlightedCells.length && !allowPartial) {
-                return alert(`המילה באורך ${cWord.length} והחלל באורך ${currentHighlightedCells.length}. אם תרצה לאפשר זאת, סמן את ה-V של "מילים קצרות" למעלה.`);
-            }
-            if(cWord.length > currentHighlightedCells.length) {
-                return alert("המילה ארוכה מדי לחלל המסומן!");
-            }
-            
-            if(!smartDB[cWord]) insertToDB(val, "", "הוזן ידנית ללוח");
-            injectToHighlighted(val, smartDB[cWord] ? smartDB[cWord].def : "", cWord.length < currentHighlightedCells.length);
-        }
-
-        function toggleBlackBlock(r, c, forceBlack = null) {
-            let target = cells[r][c];
-            let willBeBlack = forceBlack !== null ? forceBlack : !target.classList.contains('black');
-            const applyBlack = (row, col, isBlack) => {
-                let t = cells[row][col];
-                if(isBlack) {
-                    t.classList.add('black'); t.innerText = ''; t.contentEditable = false;
-                    t.classList.remove('definition', 'locked', 'heatmap-error', 'active-cell', 'highlighted', 'just-added');
-                } else {
-                    t.classList.remove('black'); t.contentEditable = true;
-                }
-            };
-            applyBlack(r, c, willBeBlack);
-            if(document.getElementById('symmetryMode').checked) {
-                let oppR = rows - 1 - r; let oppC = cols - 1 - c;
-                if(oppR !== r || oppC !== c) applyBlack(oppR, oppC, willBeBlack);
-            }
-            saveState(); // שמירה בכל הוספת שחור
-        }
-
-        function runHeatmap() {
-            cells.forEach(row => row.forEach(c => c.classList.remove('heatmap-error')));
-            syncLogicFromDOM();
-            let errors = 0;
-            
-            for(let r=0; r<rows; r++) {
-                let currentWordCells = [];
-                for(let c=0; c<=cols; c++) {
-                    if(c < cols && gridLogic[r][c] !== 'BLK' && gridLogic[r][c] !== 'DEF') { currentWordCells.push(cells[r][c]); } 
-                    else {
-                        if(currentWordCells.length > 0 && currentWordCells.length < 2) { currentWordCells.forEach(cell => cell.classList.add('heatmap-error')); errors++; }
-                        currentWordCells = [];
-                    }
-                }
-            }
-            for(let c=0; c<cols; c++) {
-                let currentWordCells = [];
-                for(let r=0; r<=rows; r++) {
-                    if(r < rows && gridLogic[r][c] !== 'BLK' && gridLogic[r][c] !== 'DEF') { currentWordCells.push(cells[r][c]); } 
-                    else {
-                        if(currentWordCells.length > 0 && currentWordCells.length < 2) { currentWordCells.forEach(cell => cell.classList.add('heatmap-error')); errors++; }
-                        currentWordCells = [];
-                    }
-                }
-            }
-            if(errors > 0) {
-                alert(`⚠️ נמצאו אזורים מתים (רווח של משבצת בודדת). לא קיימת מילה בעברית של אות 1. לחץ על "תקן חורים" כדי לחסום אותם.`);
-                document.getElementById('btnAutoFix').style.display = 'inline-block';
-            } else {
-                alert("✅ הלוח נקי! אין חללים של משבצת בודדת.");
-                document.getElementById('btnAutoFix').style.display = 'none';
-            }
-        }
-
-        function autoFixHeatmap() {
-            let fixed = 0;
-            cells.forEach((row, r) => {
-                row.forEach((cell, c) => {
-                    if(cell.classList.contains('heatmap-error')) { toggleBlackBlock(r, c, true); fixed++; }
-                });
             });
-            if(fixed > 0) { runHeatmap(); alert("כל השגיאות נחסמו בהצלחה!"); }
-            document.getElementById('btnAutoFix').style.display = 'none';
-        }
-
-        function renderDOM() {
-            gridElement.innerHTML = '';
-            gridElement.style.gridTemplateColumns = `repeat(${cols}, 40px)`;
-            gridElement.style.gridTemplateRows = `repeat(${rows}, 40px)`;
-            for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) gridElement.appendChild(cells[r][c]);
-        }
-
-        function initGrid() {
-            cells = []; gridLogic = Array(rows).fill(null).map(() => Array(cols).fill('')); placedWordsInfo = [];
-            for (let r = 0; r < rows; r++) { let rowCells = []; for (let c = 0; c < cols; c++) rowCells.push(createSingleCell()); cells.push(rowCells); }
-            renderDOM();
-        }
-
-        function clearNewHighlights() { document.querySelectorAll('.cell.just-added').forEach(c => c.classList.remove('just-added')); }
-        function highlightNewCells(r, c, length, isH) { for (let i = 0; i < length; i++) { let currR = isH ? r : r + i; let currC = isH ? c + i : c; cells[currR][currC].classList.add('just-added'); } }
-
-        function addRow(isTop) {
-            let newRowCells = []; let newRowLogic = [];
-            for (let c = 0; c < cols; c++) { newRowCells.push(createSingleCell()); newRowLogic.push(''); }
-            if (isTop) { cells.unshift(newRowCells); gridLogic.unshift(newRowLogic); placedWordsInfo.forEach(i => i.r++); } else { cells.push(newRowCells); gridLogic.push(newRowLogic); }
-            rows++; renderDOM();
-        }
-
-        function addCol(isRight) {
-            for (let r = 0; r < rows; r++) {
-                let newCell = createSingleCell();
-                if (isRight) { cells[r].unshift(newCell); gridLogic[r].unshift(''); } else { cells[r].push(newCell); gridLogic[r].push(''); }
-            }
-            if (isRight) placedWordsInfo.forEach(i => i.c++);
-            cols++; renderDOM();
-        }
-
-        function clearGrid() { if(confirm("לנקות הלוח?")) { rows = 15; cols = 15; initGrid(); activeCell = null; document.getElementById('suggestionsPanel').style.display='none'; localStorage.removeItem('tashbetzSavedGrid');} }
-        function printEmpty() { document.body.classList.add('print-empty-mode'); window.print(); setTimeout(() => { document.body.classList.remove('print-empty-mode'); }, 1000); }
-        
-        function syncLogicFromDOM() {
-            for(let r=0; r<rows; r++) {
-                for(let c=0; c<cols; c++) {
-                    if(cells[r][c].classList.contains('black')) gridLogic[r][c] = 'BLK';
-                    else if(cells[r][c].classList.contains('definition')) gridLogic[r][c] = 'DEF';
-                    else { gridLogic[r][c] = (cells[r][c].innerText.trim().length === 1 && !arrowChars.includes(cells[r][c].innerText.trim())) ? cells[r][c].innerText.trim() : ''; }
-                }
-            }
-        }
-
-        function saveState() {
-            syncLogicFromDOM();
-            const state = [];
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    state.push({ text: cells[r][c].innerText, isBlack: cells[r][c].classList.contains('black'), isDef: cells[r][c].classList.contains('definition'), isLocked: cells[r][c].classList.contains('locked') });
-                }
-            }
-            localStorage.setItem('tashbetzSavedGrid', JSON.stringify({visual: state, logic: gridLogic, placed: placedWordsInfo, r: rows, c: cols}));
-        }
-
-        function loadState() {
-            const savedData = localStorage.getItem('tashbetzSavedGrid');
-            if (!savedData) return;
-            const data = JSON.parse(savedData);
-            rows = data.r || 15; cols = data.c || 15;
-            initGrid(); gridLogic = data.logic; placedWordsInfo = data.placed || [];
-            let i = 0;
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    cells[r][c].innerText = data.visual[i].text;
-                    if (data.visual[i].isBlack) { cells[r][c].classList.add('black'); cells[r][c].contentEditable = false; }
-                    if (data.visual[i].isDef) cells[r][c].classList.add('definition');
-                    if (data.visual[i].isLocked) cells[r][c].classList.add('locked');
-                    i++;
-                }
-            }
         }
 
         function checkPlacementRules(logicArray, word, r, c, isHorizontal) {
             if (isHorizontal && c + word.length > cols) return false;
             if (!isHorizontal && r + word.length > rows) return false;
             
+            let canPlaceDef = false;
             if (isHorizontal) {
-                if (c > 0 && logicArray[r][c - 1] !== '' && logicArray[r][c - 1] !== 'BLK') return false;
-                if (c + word.length < cols && logicArray[r][c + word.length] !== '' && logicArray[r][c + word.length] !== 'BLK') return false;
+                if (c > 0 && (logicArray[r][c - 1] === '' || logicArray[r][c - 1] === 'BLK')) canPlaceDef = true;
+                if (r > 0 && (logicArray[r - 1][c] === '' || logicArray[r - 1][c] === 'BLK')) canPlaceDef = true;
             } else {
-                if (r > 0 && logicArray[r - 1][c] !== '' && logicArray[r - 1][c] !== 'BLK') return false;
-                if (r + word.length < rows && logicArray[r + word.length][c] !== '' && logicArray[r + word.length][c] !== 'BLK') return false;
+                if (r > 0 && (logicArray[r - 1][c] === '' || logicArray[r - 1][c] === 'BLK')) canPlaceDef = true;
+                if (c > 0 && (logicArray[r][c - 1] === '' || logicArray[r][c - 1] === 'BLK')) canPlaceDef = true;
+            }
+            if (!canPlaceDef) return false;
+
+            if (isHorizontal) {
+                if (c > 0 && logicArray[r][c - 1] !== '' && logicArray[r][c - 1] !== 'BLK' && logicArray[r][c - 1] !== 'DEF') return false;
+                if (c + word.length < cols && logicArray[r][c + word.length] !== '' && logicArray[r][c + word.length] !== 'BLK' && logicArray[r][c + word.length] !== 'DEF') return false;
+            } else {
+                if (r > 0 && logicArray[r - 1][c] !== '' && logicArray[r - 1][c] !== 'BLK' && logicArray[r - 1][c] !== 'DEF') return false;
+                if (r + word.length < rows && logicArray[r + word.length][c] !== '' && logicArray[r + word.length][c] !== 'BLK' && logicArray[r + word.length][c] !== 'DEF') return false;
             }
             
             let intersections = 0;
             for (let i = 0; i < word.length; i++) {
-                let currR = isHorizontal ? r : r + i; let currC = isHorizontal ? c + i : c;
+                let currR = isHorizontal ? r : r + i; 
+                let currC = isHorizontal ? c + i : c; 
                 let charInGrid = logicArray[currR][currC];
                 let cellDOM = cells[currR]?.[currC];
                 
@@ -1076,18 +1369,59 @@
                 
                 if (charInGrid === '') {
                     if (isHorizontal) {
-                        if (currR > 0 && logicArray[currR - 1][currC] !== '' && logicArray[currR - 1][currC] !== 'BLK') return false;
-                        if (currR < rows - 1 && logicArray[currR + 1][currC] !== '' && logicArray[currR + 1][currC] !== 'BLK') return false;
+                        if (currR > 0 && logicArray[currR - 1][currC] !== '' && logicArray[currR - 1][currC] !== 'BLK' && logicArray[currR - 1][currC] !== 'DEF') return false;
+                        if (currR < rows - 1 && logicArray[currR + 1][currC] !== '' && logicArray[currR + 1][currC] !== 'BLK' && logicArray[currR + 1][currC] !== 'DEF') return false;
                     } else {
-                        if (currC > 0 && logicArray[currR][currC - 1] !== '' && logicArray[currR][currC - 1] !== 'BLK') return false;
-                        if (currC < cols - 1 && logicArray[currR][currC + 1] !== '' && logicArray[currR][currC + 1] !== 'BLK') return false;
+                        if (currC > 0 && logicArray[currR][currC - 1] !== '' && logicArray[currR][currC - 1] !== 'BLK' && logicArray[currR][currC - 1] !== 'DEF') return false;
+                        if (currC < cols - 1 && logicArray[currR][currC + 1] !== '' && logicArray[currR][currC + 1] !== 'BLK' && logicArray[currR][currC + 1] !== 'DEF') return false;
                     }
                 }
             }
             return { valid: true, intersections: intersections };
         }
 
+        function tentativePlaceDef(tempLogic, r, c, isH) {
+            if(isH) {
+                if(c > 0 && (tempLogic[r][c - 1] === '' || tempLogic[r][c - 1] === 'BLK')) { tempLogic[r][c - 1] = 'DEF'; return; }
+                if(r > 0 && (tempLogic[r - 1][c] === '' || tempLogic[r - 1][c] === 'BLK')) { tempLogic[r - 1][c] = 'DEF'; return; }
+            } else {
+                if(r > 0 && (tempLogic[r - 1][c] === '' || tempLogic[r - 1][c] === 'BLK')) { tempLogic[r - 1][c] = 'DEF'; return; }
+                if(c > 0 && (tempLogic[r][c - 1] === '' || tempLogic[r][c - 1] === 'BLK')) { tempLogic[r][c - 1] = 'DEF'; return; }
+            }
+        }
+
+        function injectToHighlighted(originalWord, def, isPartial = false) {
+            saveStateToUndo();
+            syncLogicFromDOM();
+            let cWord = cleanWord(originalWord);
+            
+            for(let i=0; i<cWord.length; i++) {
+                currentHighlightedCells[i].innerText = cWord[i];
+                currentHighlightedCells[i].classList.add('locked');
+            }
+            
+            if (isPartial && cWord.length < currentHighlightedCells.length) {
+                let blockCell = currentHighlightedCells[cWord.length];
+                let coords = getCellCoords(blockCell);
+                toggleBlackBlock(coords.r, coords.c, true);
+            }
+            
+            let p = getCellCoords(currentHighlightedCells[0]);
+            placedWordsInfo.push({word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')});
+            let dict = {}; dict[cWord] = def; 
+            
+            syncLogicFromDOM(); 
+            placeDefinitions([{word: cWord, r: p.r, c: p.c, isHorizontal: (currentDir==='horizontal')}], dict);
+            
+            closeFloatingUI();
+            
+            for(let i=0; i<cWord.length; i++) {
+                currentHighlightedCells[i].classList.add('just-added');
+            }
+        }
+
         function injectDirectWords() {
+            saveStateToUndo();
             clearNewHighlights(); syncLogicFromDOM();
             const inputField = document.getElementById('directWordInput');
             const text = inputField.value;
@@ -1099,62 +1433,77 @@
             
             newWords.forEach(originalWord => {
                 let cWord = cleanWord(originalWord);
-                if (cWord.length > 1 && !smartDB[cWord]) {
-                    insertToDB(originalWord, "", "עוגן (שלד)");
-                }
+                if (cWord.length > 1 && !smartDB[cWord]) { insertToDB(originalWord, "", "עוגן (שלד)"); }
             });
 
             let wordsToPlace = newWords.map(w => cleanWord(w)).filter(w => w.length > 1 && !placedWordsInfo.some(info => info.word === w));
             if (wordsToPlace.length === 0) { inputField.value = ''; return; }
 
             let successfullyPlaced = 0;
+            let attempts = 0;
+            let placedInThisRun = true;
             
-            for (let i = 0; i < wordsToPlace.length; i++) {
-                let cWord = wordsToPlace[i];
-                let bestPlacement = null;
+            while (wordsToPlace.length > 0 && attempts < 10) {
+                placedInThisRun = false;
+                for (let i = 0; i < wordsToPlace.length; i++) {
+                    let cWord = wordsToPlace[i];
+                    let bestPlacement = null;
 
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        let resH = checkPlacementRules(gridLogic, cWord, r, c, true);
-                        if (resH.valid && resH.intersections > 0) { if(!bestPlacement || resH.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: true, def: smartDB[cWord].def}; }
-                        let resV = checkPlacementRules(gridLogic, cWord, r, c, false);
-                        if (resV.valid && resV.intersections > 0) { if(!bestPlacement || resV.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: false, def: smartDB[cWord].def}; }
-                    }
-                }
-
-                if (!bestPlacement) {
                     for (let r = 0; r < rows; r++) {
                         for (let c = 0; c < cols; c++) {
                             let resH = checkPlacementRules(gridLogic, cWord, r, c, true);
-                            if (resH.valid) { bestPlacement = {word: cWord, r: r, c: c, isH: true, def: smartDB[cWord].def}; break; }
+                            if (resH.valid && resH.intersections > 0) { if(!bestPlacement || resH.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: true, def: smartDB[cWord].def}; }
                             let resV = checkPlacementRules(gridLogic, cWord, r, c, false);
-                            if (resV.valid) { bestPlacement = {word: cWord, r: r, c: c, isH: false, def: smartDB[cWord].def}; break; }
+                            if (resV.valid && resV.intersections > 0) { if(!bestPlacement || resV.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, r: r, c: c, isH: false, def: smartDB[cWord].def}; }
                         }
-                        if(bestPlacement) break;
                     }
-                }
 
-                if (bestPlacement) {
-                    for (let j = 0; j < cWord.length; j++) {
-                        let currR = bestPlacement.isH ? bestPlacement.r : bestPlacement.r + j;
-                        let currC = bestPlacement.isH ? bestPlacement.c + j : bestPlacement.c;
-                        gridLogic[currR][currC] = cWord[j]; 
-                        cells[currR][currC].innerText = cWord[j];
-                        cells[currR][currC].classList.add('locked'); 
+                    if (!bestPlacement) {
+                        for (let r = 0; r < rows; r++) {
+                            for (let c = 0; c < cols; c++) {
+                                let resH = checkPlacementRules(gridLogic, cWord, r, c, true);
+                                if (resH.valid) { bestPlacement = {word: cWord, r: r, c: c, isH: true, def: smartDB[cWord].def}; break; }
+                                let resV = checkPlacementRules(gridLogic, cWord, r, c, false);
+                                if (resV.valid) { bestPlacement = {word: cWord, r: r, c: c, isH: false, def: smartDB[cWord].def}; break; }
+                            }
+                            if(bestPlacement) break;
+                        }
                     }
-                    placedWordsInfo.push({word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH});
-                    let tempDict = {}; tempDict[cWord] = bestPlacement.def; placeDefinitions([{word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH}], tempDict);
-                    highlightNewCells(bestPlacement.r, bestPlacement.c, cWord.length, bestPlacement.isH);
-                    successfullyPlaced++;
+
+                    if (bestPlacement) {
+                        for (let j = 0; j < cWord.length; j++) {
+                            let currR = bestPlacement.isH ? bestPlacement.r : bestPlacement.r + j;
+                            let currC = bestPlacement.isH ? bestPlacement.c + j : bestPlacement.c; 
+                            gridLogic[currR][currC] = cWord[j]; cells[currR][currC].innerText = cWord[j]; cells[currR][currC].classList.add('locked'); 
+                        }
+                        placedWordsInfo.push({word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH});
+                        
+                        syncLogicFromDOM(); 
+                        let tempDict = {}; tempDict[cWord] = bestPlacement.def; placeDefinitions([{word: cWord, r: bestPlacement.r, c: bestPlacement.c, isHorizontal: bestPlacement.isH}], tempDict);
+                        
+                        let highlightCellsArr = [];
+                        for (let j = 0; j < cWord.length; j++) {
+                            let currR = bestPlacement.isH ? bestPlacement.r : bestPlacement.r + j;
+                            let currC = bestPlacement.isH ? bestPlacement.c + j : bestPlacement.c;
+                            highlightCellsArr.push(cells[currR][currC]);
+                        }
+                        highlightCellsArr.forEach(c => c.classList.add('just-added'));
+                        successfullyPlaced++;
+                        
+                        wordsToPlace.splice(i, 1); i--; placedInThisRun = true;
+                    }
                 }
+                if (!placedInThisRun) break; 
+                attempts++;
             }
-            saveDB(); inputField.value = ''; 
-            if (successfullyPlaced < wordsToPlace.length) {
-                alert(`שובצו ${successfullyPlaced} עוגנים. אין יותר מקום פיזי פנוי בלוח לשאר המילים.`);
+            inputField.value = ''; closeBottomSheets();
+            if (wordsToPlace.length > 0) {
+                alert(`שובצו ${successfullyPlaced} עוגנים. לא נותר מקום להגדרות עבור שאר המילים.`);
             }
         }
 
         function generateCrossword() {
+            saveStateToUndo();
             clearNewHighlights(); syncLogicFromDOM();
             let filterCat = document.getElementById('activeCategoryFilter').value;
             
@@ -1178,6 +1527,7 @@
                     let sr = Math.floor(rows / 2); let sc = Math.floor((cols - fw.length) / 2);
                     if(sc >= 0 && checkPlacementRules(tempLogic, fw, sr, sc, true).valid) {
                         for (let i = 0; i < fw.length; i++) tempLogic[sr][sc + i] = fw[i];
+                        tentativePlaceDef(tempLogic, sr, sc, true);
                         tempPlaced.push({word: fw, r: sr, c: sc, isHorizontal: true});
                         newlyPlaced++;
                     }
@@ -1194,10 +1544,12 @@
                                 if (matchIdx !== -1) {
                                     if (r - matchIdx >= 0 && checkPlacementRules(tempLogic, word, r - matchIdx, c, false).valid) {
                                         for (let j = 0; j < word.length; j++) tempLogic[r - matchIdx + j][c] = word[j];
+                                        tentativePlaceDef(tempLogic, r - matchIdx, c, false);
                                         tempPlaced.push({word: word, r: r - matchIdx, c: c, isHorizontal: false}); placed = true; newlyPlaced++;
                                     }
                                     else if (c - matchIdx >= 0 && checkPlacementRules(tempLogic, word, r, c - matchIdx, true).valid) {
-                                        for (let j = 0; j < word.length; j++) tempLogic[r][c - matchIdx + j] = word[j];
+                                        for (let j = 0; j < word.length; j++) tempLogic[r][c - matchIdx + j] = word[j]; 
+                                        tentativePlaceDef(tempLogic, r, c - matchIdx, true);
                                         tempPlaced.push({word: word, r: r, c: c - matchIdx, isHorizontal: true}); placed = true; newlyPlaced++;
                                     }
                                 }
@@ -1221,83 +1573,155 @@
                 placedWordsInfo.forEach(info => { if(smartDB[info.word]) dictForPlacement[info.word] = smartDB[info.word].def; });
                 placeDefinitions(placedWordsInfo, dictForPlacement);
             } else {
-                alert("לא הצלחנו לשבץ מילים נוספות בלוח הקיים. נסה להוסיף מילות דבק (2-3 אותיות) למאגר.");
+                alert("לא הצלחנו לשבץ מילים נוספות. נסה מילים קצרות יותר.");
+            }
+            closeBottomSheets();
+        }
+
+        function toggleBlackBlock(r, c, forceBlack = null) {
+            let target = cells[r][c];
+            let willBeBlack = forceBlack !== null ? forceBlack : !target.classList.contains('black');
+            const applyBlack = (row, col, isBlack) => {
+                let t = cells[row][col];
+                if(isBlack) {
+                    t.classList.add('black'); t.innerText = ''; t.contentEditable = false;
+                    t.classList.remove('definition', 'locked', 'heatmap-error', 'active-cell', 'highlighted', 'just-added');
+                } else {
+                    t.classList.remove('black'); t.contentEditable = true;
+                }
+            };
+            applyBlack(r, c, willBeBlack);
+            if(document.getElementById('symmetryMode').checked) {
+                let oppR = rows - 1 - r; let oppC = cols - 1 - c;
+                if(oppR !== r || oppC !== c) applyBlack(oppR, oppC, willBeBlack);
             }
         }
 
-        function suggestQualityWords() {
-            clearNewHighlights(); syncLogicFromDOM();
-            let filterCat = document.getElementById('activeCategoryFilter').value;
-            let suggestions = [];
-            let isBoardEmpty = placedWordsInfo.length === 0;
-
-            if(Object.keys(smartDB).length === 0) return alert("המאגר ריק!");
-
-            for (let cWord in smartDB) {
-                let entry = smartDB[cWord];
-                if (filterCat !== "ALL" && entry.category !== filterCat) continue; 
-                if (placedWordsInfo.some(info => info.word === cWord)) continue; 
-                
-                let bestPlacement = null;
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        let resH = checkPlacementRules(gridLogic, cWord, r, c, true);
-                        if (resH.valid && (resH.intersections > 0 || isBoardEmpty)) {
-                            if(!bestPlacement || resH.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, original: entry.original, r: r, c: c, isH: true, def: entry.def, int: resH.intersections, score: entry.score};
-                        }
-                        let resV = checkPlacementRules(gridLogic, cWord, r, c, false);
-                        if (resV.valid && (resV.intersections > 0 || isBoardEmpty)) {
-                            if(!bestPlacement || resV.intersections > bestPlacement.intersections) bestPlacement = {word: cWord, original: entry.original, r: r, c: c, isH: false, def: entry.def, int: resV.intersections, score: entry.score};
-                        }
+        function runHeatmap() {
+            cells.forEach(row => row.forEach(c => c.classList.remove('heatmap-error')));
+            syncLogicFromDOM();
+            let errors = 0;
+            for(let r=0; r<rows; r++) {
+                let currentWordCells = [];
+                for(let c=0; c<=cols; c++) {
+                    if(c < cols && gridLogic[r][c] !== 'BLK' && gridLogic[r][c] !== 'DEF') { currentWordCells.push(cells[r][c]); } 
+                    else {
+                        if(currentWordCells.length > 0 && currentWordCells.length < 2) { currentWordCells.forEach(cell => cell.classList.add('heatmap-error')); errors++; }
+                        currentWordCells = [];
                     }
                 }
-                if (bestPlacement) suggestions.push(bestPlacement);
             }
-
-            const panel = document.getElementById('suggestionsPanel'); const list = document.getElementById('suggestionsList'); const title = document.getElementById('suggestionsTitle'); list.innerHTML = '';
-            title.innerText = "היועץ מציע הצעות שמתאימות ללוח:";
-            if (suggestions.length === 0) { list.innerHTML = `<p>אין התאמות לקטגוריה.</p>`; panel.style.display = 'block'; return; }
-
-            suggestions.sort((a, b) => {
-                if (b.int !== a.int) return b.int - a.int;
-                return b.score - a.score;
-            });
-
-            suggestions.slice(0, 15).forEach(sugg => {
-                const item = document.createElement('div'); item.className = 'suggestion-item';
-                let overlapText = sugg.int > 0 ? `מצליב ${sugg.int} אותיות` : "עוגן ראשון";
-                item.innerHTML = `<div><span class="suggestion-word">${sugg.original}</span><span class="score-badge">ציון: ${sugg.score}</span><span style="font-size:11px; color:#999; margin-right:15px;">(${sugg.isH ? 'מאוזן' : 'מאונך'}, ${overlapText})</span></div>`;
-                const btn = document.createElement('button'); btn.className = 'btn-green'; btn.style.padding = '5px 10px'; btn.style.fontSize = '12px'; btn.innerText = 'שבץ אותי!';
-                
-                btn.onclick = function() {
-                    for (let j = 0; j < sugg.word.length; j++) {
-                        let currR = sugg.isH ? sugg.r : sugg.r + j; let currC = sugg.isH ? sugg.c + j : sugg.c;
-                        gridLogic[currR][currC] = sugg.word[j]; cells[currR][currC].innerText = sugg.word[j];
+            for(let c=0; c<cols; c++) {
+                let currentWordCells = [];
+                for(let r=0; r<=rows; r++) {
+                    if(r < rows && gridLogic[r][c] !== 'BLK' && gridLogic[r][c] !== 'DEF') { currentWordCells.push(cells[r][c]); } 
+                    else {
+                        if(currentWordCells.length > 0 && currentWordCells.length < 2) { currentWordCells.forEach(cell => cell.classList.add('heatmap-error')); errors++; }
+                        currentWordCells = [];
                     }
-                    placedWordsInfo.push({word: sugg.word, r: sugg.r, c: sugg.c, isHorizontal: sugg.isH});
-                    let dict = {}; dict[sugg.word] = sugg.def; placeDefinitions([{word: sugg.word, r: sugg.r, c: sugg.c, isHorizontal: sugg.isH}], dict);
-                    highlightNewCells(sugg.r, sugg.c, sugg.word.length, sugg.isH);
-                    panel.style.display = 'none'; 
-                };
-                item.appendChild(btn); list.appendChild(item);
-            });
-            panel.style.display = 'block';
+                }
+            }
+            if(errors > 0) {
+                alert(`⚠️ נמצאו אזורים מתים. לחץ "חסום שגיאות" לתיקון.`);
+                document.getElementById('btnAutoFix').style.display = 'inline-block';
+            } else {
+                alert("✅ הלוח נקי משגיאות!");
+                document.getElementById('btnAutoFix').style.display = 'none';
+            }
         }
 
-        function placeDefinitions(wordsInfoList, dict) {
-            wordsInfoList.forEach(info => {
-                let definition = dict[info.word];
-                if(definition) {
-                    let defPlaced = false;
-                    if(info.isHorizontal) {
-                        if(info.c > 0 && gridLogic[info.r][info.c - 1] === '') { cells[info.r][info.c - 1].innerText = definition + '\n←'; cells[info.r][info.c - 1].classList.add('definition'); gridLogic[info.r][info.c - 1] = 'DEF'; defPlaced = true; } 
-                        else if(!defPlaced && info.r > 0 && gridLogic[info.r - 1][info.c] === '') { cells[info.r - 1][info.c].innerText = definition + '\n↓'; cells[info.r - 1][info.c].classList.add('definition'); gridLogic[info.r - 1][info.c] = 'DEF'; defPlaced = true; }
-                    } else {
-                        if(info.r > 0 && gridLogic[info.r - 1][info.c] === '') { cells[info.r - 1][info.c].innerText = definition + '\n↓'; cells[info.r - 1][info.c].classList.add('definition'); gridLogic[info.r - 1][info.c] = 'DEF'; defPlaced = true; } 
-                        else if(!defPlaced && info.c > 0 && gridLogic[info.r][info.c - 1] === '') { cells[info.r][info.c - 1].innerText = definition + '\n←'; cells[info.r][info.c - 1].classList.add('definition'); gridLogic[info.r][info.c - 1] = 'DEF'; defPlaced = true; }
-                    }
-                }
+        function autoFixHeatmap() {
+            saveStateToUndo();
+            let fixed = 0;
+            cells.forEach((row, r) => {
+                row.forEach((cell, c) => {
+                    if(cell.classList.contains('heatmap-error')) { toggleBlackBlock(r, c, true); fixed++; }
+                });
             });
+            if(fixed > 0) { runHeatmap(); alert("השגיאות נחסמו."); }
+            document.getElementById('btnAutoFix').style.display = 'none';
+        }
+
+        function renderDOM() {
+            gridElement.innerHTML = '';
+            gridElement.style.gridTemplateColumns = `repeat(${cols}, 40px)`;
+            gridElement.style.gridTemplateRows = `repeat(${rows}, 40px)`;
+            for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) gridElement.appendChild(cells[r][c]);
+        }
+
+        function initGrid() {
+            cells = []; gridLogic = Array(rows).fill(null).map(() => Array(cols).fill('')); placedWordsInfo = [];
+            for (let r = 0; r < rows; r++) { let rowCells = []; for (let c = 0; c < cols; c++) rowCells.push(createSingleCell()); cells.push(rowCells); }
+            renderDOM();
+        }
+
+        function clearNewHighlights() { document.querySelectorAll('.cell.just-added').forEach(c => c.classList.remove('just-added')); }
+        function addRow(isTop) {
+            saveStateToUndo();
+            let newRowCells = []; let newRowLogic = [];
+            for (let c = 0; c < cols; c++) { newRowCells.push(createSingleCell()); newRowLogic.push(''); }
+            if (isTop) { cells.unshift(newRowCells); gridLogic.unshift(newRowLogic); placedWordsInfo.forEach(i => i.r++); } else { cells.push(newRowCells); gridLogic.push(newRowLogic); }
+            rows++; renderDOM();
+        }
+
+        function addCol(isRight) {
+            saveStateToUndo();
+            for (let r = 0; r < rows; r++) {
+                let newCell = createSingleCell();
+                if (isRight) { cells[r].unshift(newCell); gridLogic[r].unshift(''); } else { cells[r].push(newCell); gridLogic[r].push(''); }
+            }
+            if (isRight) placedWordsInfo.forEach(i => i.c++);
+            cols++; renderDOM();
+        }
+
+        function clearGrid() { 
+            if(confirm("לנקות הלוח לחלוטין?")) { 
+                saveStateToUndo();
+                rows = 15; cols = 15; initGrid(); activeCell = null; 
+                localStorage.removeItem('tashbetzSavedGrid');
+                closeBottomSheets(); closeFloatingUI();
+            } 
+        }
+        function printEmpty() { document.body.classList.add('print-empty-mode'); window.print(); setTimeout(() => { document.body.classList.remove('print-empty-mode'); }, 1000); }
+        
+        function syncLogicFromDOM() {
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    if(cells[r][c].classList.contains('black')) gridLogic[r][c] = 'BLK';
+                    else if(cells[r][c].classList.contains('definition')) gridLogic[r][c] = 'DEF';
+                    else { gridLogic[r][c] = (cells[r][c].innerText.trim().length === 1 && !arrowChars.includes(cells[r][c].innerText.trim())) ? cells[r][c].innerText.trim() : ''; }
+                }
+            }
+        }
+
+        function saveState() {
+            syncLogicFromDOM();
+            const state = [];
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    state.push({ text: cells[r][c].innerText, isBlack: cells[r][c].classList.contains('black'), isDef: cells[r][c].classList.contains('definition'), isLocked: cells[r][c].classList.contains('locked') });
+                }
+            }
+            localStorage.setItem('tashbetzSavedGrid', JSON.stringify({visual: state, logic: gridLogic, placed: placedWordsInfo, r: rows, c: cols}));
+            alert("הלוח נשמר בהצלחה!");
+        }
+
+        function loadState() {
+            const savedData = localStorage.getItem('tashbetzSavedGrid');
+            if (!savedData) return;
+            const data = JSON.parse(savedData);
+            rows = data.r || 15; cols = data.c || 15;
+            initGrid(); gridLogic = data.logic; placedWordsInfo = data.placed || [];
+            let i = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    cells[r][c].innerText = data.visual[i].text;
+                    if (data.visual[i].isBlack) { cells[r][c].classList.add('black'); cells[r][c].contentEditable = false; }
+                    if (data.visual[i].isDef) cells[r][c].classList.add('definition');
+                    if (data.visual[i].isLocked) cells[r][c].classList.add('locked');
+                    i++;
+                }
+            }
         }
 
         function exportToDigital() {
@@ -1319,24 +1743,43 @@
             let gameHTML = `<!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>התשחץ הדיגיטלי</title>
 <style>
-    body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; }
-    h1 { color: #333; font-size: 22px; text-align: center; margin-bottom: 10px;}
+    body { font-family: Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; }
+    h1 { font-size: 22px; text-align: center; margin-bottom: 10px;}
     #defBanner { width: 100%; max-width: 800px; background-color: #007bff; color: white; text-align: center; padding: 15px 10px; font-size: 18px; font-weight: bold; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; min-height: 55px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background-color 0.3s;}
     .grid-wrapper { width: 100%; max-width: 95vw; overflow-x: auto; text-align: center; direction: rtl; padding-bottom: 10px;}
     .grid { display: inline-grid; grid-template-columns: repeat(${exportCols}, 40px); grid-template-rows: repeat(${exportRows}, 40px); background-color: transparent; border-top: 2px solid #000; border-right: 2px solid #000; width: max-content; touch-action: manipulation; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: right;}
-    .cell { background-color: #fff; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 20px; box-sizing: border-box; position: relative; overflow: hidden; border-bottom: 2px solid #000; border-left: 2px solid #000; height: 40px; width: 40px; transition: background-color 0.2s;}
-    .cell.black { background-color: #333 !important; }
-    .cell.def { background-color: #e2e8f0 !important; font-size: 10px; line-height: 1.1; text-align: center; padding: 2px; flex-direction: column; cursor: pointer;}
-    .cell.highlighted { background-color: #cce5ff; } .cell.active-cell { background-color: #fff3cd; }
+    .cell { background-color: #fff; border-color: #000; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 20px; box-sizing: border-box; position: relative; overflow: hidden; border-bottom: 2px solid #000; border-left: 2px solid #000; height: 40px; width: 40px; transition: background-color 0.2s;}
+    
+    .cell.black { 
+        background-color: #222 !important; 
+        background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%, rgba(255,255,255,0.05)), repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%, rgba(255,255,255,0.05));
+        background-position: 0 0, 8px 8px; background-size: 16px 16px;
+    }
+    
+    .cell.def { background-color: #e2e8f0 !important; font-size: 10px; line-height: 1.1; text-align: center; padding: 2px; flex-direction: column; cursor: pointer; color: #111;}
+    .cell.highlighted { background-color: #cce5ff; } 
+    .cell.active-cell { background-color: #fff3cd; }
     input.letter { width: 100%; height: 100%; border: none; text-align: center; font-weight: bold; font-size: 20px; background: transparent; padding: 0; outline: none; border-radius: 0; color: #333; cursor: pointer;}
     input.letter:focus { background-color: transparent; } 
-    input.letter.correct { color: #0f5132; background-color: #d1e7dd; } input.letter.wrong { color: #842029; background-color: #f8d7da; }
+
     .toolbar { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; padding-bottom: 30px;}
     button { padding: 12px 20px; font-size: 16px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
     button.check { background-color: #28a745; color: white; } button.reveal { background-color: #ffc107; color: #333; }
+
+    @keyframes pulseGreen {
+        0% { background-color: #d1fae5; transform: scale(1); }
+        50% { background-color: #34d399; transform: scale(1.05); z-index: 10; box-shadow: 0 0 10px #34d399; }
+        100% { background-color: #d1fae5; transform: scale(1); }
+    }
+    @keyframes fadeOutUp {
+        0% { opacity: 1; transform: translateY(0); }
+        70% { opacity: 1; }
+        100% { opacity: 0; transform: translateY(-15px); }
+    }
 </style>
 </head>
 <body>
@@ -1350,8 +1793,8 @@
                     if(gridLogic[r][c] === 'BLK') { gameHTML += `<div class="cell black" data-r="${relR}" data-c="${relC}"></div>`; } 
                     else if(gridLogic[r][c] === 'DEF') {
                         let originalText = cells[r][c].innerText;
-                        let textForDisplay = originalText.replace(/\n/g, '<br>');
-                        let textForBanner = originalText.replace(/\n/g, ' ').replace(/"/g, '&quot;');
+                        let textForDisplay = originalText.replace(/\n---\n/g, '<br><hr style="width:80%; margin:2px auto; border:0; border-top:1px solid #aaa;"><br>').replace(/\n/g, '<br>');
+                        let textForBanner = originalText.replace(/\n---\n/g, ' | ').replace(/\n/g, ' ').replace(/"/g, '&quot;');
                         gameHTML += `<div class="cell def" onclick="showDef('${textForBanner}')" data-r="${relR}" data-c="${relC}">${textForDisplay}</div>`;
                     } else {
                         let ans = gridLogic[r][c] || '';
@@ -1374,23 +1817,76 @@
             if (!gridMap[r]) gridMap[r] = []; gridMap[r][c] = input;
             if (r > maxR) maxR = r; if (c > maxC) maxC = c;
         });
+        
         let currentDir = 'horizontal'; 
+        
+        function playSuccessSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1); 
+                gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.05); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+                osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.3);
+            } catch(e) {}
+        }
+
         function showDef(text) {
-            document.getElementById('defBanner').innerText = text; document.getElementById('defBanner').style.backgroundColor = '#17a2b8';
+            document.getElementById('defBanner').innerText = text; 
+            document.getElementById('defBanner').style.backgroundColor = '#17a2b8';
             setTimeout(() => { document.getElementById('defBanner').style.backgroundColor = '#007bff'; }, 300);
         }
+
         function normalizeHebrew(str) { const map = {'ם':'מ', 'ן':'נ', 'ץ':'צ', 'ף':'פ', 'ך':'כ'}; return str.replace(/[םןץףך]/g, m => map[m]); }
-        function highlightWord(r, c, dir) {
+        
+        function highlightWord(startR, startC, dir) {
             document.querySelectorAll('.cell').forEach(cell => { cell.classList.remove('highlighted', 'active-cell'); });
-            if (!gridMap[r] || !gridMap[r][c]) return;
-            gridMap[r][c].parentElement.classList.add('active-cell');
+            if (!gridMap[startR] || !gridMap[startR][startC]) return;
+            gridMap[startR][startC].parentElement.classList.add('active-cell');
             let cellsToHighlight = [];
-            let i = dir === 'horizontal' ? c : r;
-            while(i >= 0) { let input = dir === 'horizontal' ? gridMap[r]?.[i] : gridMap[i]?.[c]; if (!input) break; cellsToHighlight.push(input.parentElement); i--; }
-            i = (dir === 'horizontal' ? c : r) + 1;
-            while(i <= (dir === 'horizontal' ? maxC : maxR)) { let input = dir === 'horizontal' ? gridMap[r]?.[i] : gridMap[i]?.[c]; if (!input) break; cellsToHighlight.push(input.parentElement); i++; }
+            if (dir === 'horizontal') {
+                let c = startC; while (c >= 0 && gridMap[startR][c]) { cellsToHighlight.push(gridMap[startR][c].parentElement); c--; }
+                c = startC + 1; while (c <= maxC && gridMap[startR][c]) { cellsToHighlight.push(gridMap[startR][c].parentElement); c++; }
+            } else {
+                let r = startR; while (r >= 0 && gridMap[r][startC]) { cellsToHighlight.push(gridMap[r][startC].parentElement); r--; }
+                r = startR + 1; while (r <= maxR && gridMap[r][startC]) { cellsToHighlight.push(gridMap[r][startC].parentElement); r++; }
+            }
             cellsToHighlight.forEach(cell => { if(!cell.classList.contains('active-cell')) { cell.classList.add('highlighted'); } });
         }
+
+        function checkCurrentWord(startR, startC, dir) {
+            let r = startR, c = startC;
+            if (dir === 'horizontal') { while(c > 0 && gridMap[r][c-1]) c--; } 
+            else { while(r > 0 && gridMap[r-1][c]) r--; }
+
+            let wordInputs = []; let currR = r, currC = c;
+            while(gridMap[currR] && gridMap[currR][currC]) {
+                wordInputs.push(gridMap[currR][currC]);
+                if (dir === 'horizontal') currC++; else currR++;
+            }
+
+            let isFull = true; let isCorrect = true;
+            wordInputs.forEach(inp => {
+                if(!inp.value) isFull = false;
+                if(normalizeHebrew(inp.value.trim()) !== inp.getAttribute('data-ans')) isCorrect = false;
+            });
+
+            if (isFull && isCorrect && wordInputs.length > 1) {
+                if(!wordInputs[0].dataset.solved) {
+                    playSuccessSound();
+                    wordInputs.forEach(inp => {
+                        inp.dataset.solved = 'true'; inp.parentElement.style.animation = 'pulseGreen 0.5s ease'; inp.style.color = '#10b981';
+                        if(!inp.parentElement.querySelector('.check-mark')) {
+                            let v = document.createElement('div'); v.className = 'check-mark'; v.innerHTML = '✔';
+                            v.style.cssText = 'position:absolute; top:-5px; left:2px; color:#10b981; font-size:14px; z-index:10; pointer-events:none; animation: fadeOutUp 1.5s forwards; text-shadow: 0 0 2px white;';
+                            inp.parentElement.appendChild(v);
+                        }
+                    });
+                    setTimeout(() => { wordInputs.forEach(inp => inp.parentElement.style.animation = ''); }, 500);
+                }
+            }
+        }
+
         inputs.forEach((input) => {
             input.addEventListener('click', function(e) {
                 const r = parseInt(this.getAttribute('data-r')); const c = parseInt(this.getAttribute('data-c'));
@@ -1399,43 +1895,64 @@
             });
             input.addEventListener('focus', function() { const r = parseInt(this.getAttribute('data-r')); const c = parseInt(this.getAttribute('data-c')); highlightWord(r, c, currentDir); });
             input.addEventListener('blur', function() { this.dataset.focused = 'false'; });
+            
             input.addEventListener('input', function(e) {
-                this.classList.remove('correct', 'wrong'); this.parentElement.classList.remove('correct', 'wrong');
+                const finalsMap = {'ם':'מ', 'ן':'נ', 'ץ':'צ', 'ף':'פ', 'ך':'כ'};
+                let val = this.value.slice(-1); if(finalsMap[val]) val = finalsMap[val]; this.value = val;
+                this.dataset.solved = 'false'; this.style.color = '';
+                
                 if (this.value.length === 1) {
                     const r = parseInt(this.getAttribute('data-r')); const c = parseInt(this.getAttribute('data-c'));
-                    let nextInput = currentDir === 'horizontal' ? gridMap[r]?.[c - 1] : gridMap[r + 1]?.[c]; if (nextInput) nextInput.focus();
+                    checkCurrentWord(r, c, currentDir);
+                    let nextInput = currentDir === 'horizontal' ? gridMap[r]?.[c + 1] : gridMap[r + 1]?.[c];
+                    if (nextInput) { nextInput.focus(); setTimeout(() => nextInput.select(), 10); }
                 }
             });
+            
             input.addEventListener('keydown', function(e) {
                 const r = parseInt(this.getAttribute('data-r')); const c = parseInt(this.getAttribute('data-c'));
-                if (e.key === 'Backspace' && this.value === '') { let prevInput = currentDir === 'horizontal' ? gridMap[r]?.[c + 1] : gridMap[r - 1]?.[c]; if (prevInput) { prevInput.focus(); prevInput.value = ''; } } 
-                else if (e.key === 'ArrowRight') { e.preventDefault(); let target = gridMap[r]?.[c - 1]; if(target) { currentDir = 'horizontal'; target.focus(); } } 
-                else if (e.key === 'ArrowLeft') { e.preventDefault(); let target = gridMap[r]?.[c + 1]; if(target) { currentDir = 'horizontal'; target.focus(); } } 
-                else if (e.key === 'ArrowUp') { e.preventDefault(); let target = gridMap[r - 1]?.[c]; if(target) { currentDir = 'vertical'; target.focus(); } } 
-                else if (e.key === 'ArrowDown') { e.preventDefault(); let target = gridMap[r + 1]?.[c]; if(target) { currentDir = 'vertical'; target.focus(); } }
+                if (e.key === 'Backspace' && this.value === '') { 
+                    let prevInput = currentDir === 'horizontal' ? gridMap[r]?.[c - 1] : gridMap[r - 1]?.[c]; 
+                    if (prevInput) { prevInput.focus(); prevInput.value = ''; prevInput.dataset.solved = 'false'; prevInput.style.color = ''; } 
+                } 
+                else if (e.key === 'ArrowRight') { e.preventDefault(); let target = gridMap[r]?.[c - 1]; if(target) { currentDir = 'horizontal'; target.focus(); setTimeout(() => target.select(), 10);} } 
+                else if (e.key === 'ArrowLeft') { e.preventDefault(); let target = gridMap[r]?.[c + 1]; if(target) { currentDir = 'horizontal'; target.focus(); setTimeout(() => target.select(), 10);} } 
+                else if (e.key === 'ArrowUp') { e.preventDefault(); let target = gridMap[r - 1]?.[c]; if(target) { currentDir = 'vertical'; target.focus(); setTimeout(() => target.select(), 10);} } 
+                else if (e.key === 'ArrowDown') { e.preventDefault(); let target = gridMap[r + 1]?.[c]; if(target) { currentDir = 'vertical'; target.focus(); setTimeout(() => target.select(), 10);} }
             });
         });
+
         function checkAnswers() {
             let allCorrect = true; let filled = 0;
             inputs.forEach(input => {
+                input.style.color = '';
                 if (input.value.trim() !== '') {
                     filled++; let userVal = normalizeHebrew(input.value.trim());
-                    if (userVal === input.getAttribute('data-ans')) { input.classList.add('correct'); input.classList.remove('wrong'); } 
-                    else { input.classList.add('wrong'); input.classList.remove('correct'); allCorrect = false; }
+                    if (userVal === input.getAttribute('data-ans')) { input.style.color = '#10b981'; } 
+                    else { input.style.color = '#ef4444'; allCorrect = false; }
                 }
             });
             if (filled === inputs.length && allCorrect) { alert("כל הכבוד! פתרת את התשחץ בהצלחה מוחלטת!"); }
         }
-        function revealAll() { if(confirm("בטוח שאתה רוצה לגלות את כל התשובות?")) { inputs.forEach(input => { input.value = input.getAttribute('data-ans'); input.classList.remove('wrong'); input.classList.add('correct'); }); } }
+
+        function revealAll() { 
+            if(confirm("בטוח שאתה רוצה לגלות את כל התשובות?")) { 
+                inputs.forEach(input => { input.value = input.getAttribute('data-ans'); input.style.color = '#3b82f6'; }); 
+            } 
+        }
     <\/script>
 </body>
 </html>`;
             const blob = new Blob([gameHTML], { type: 'text/html' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = 'play_tashbetz.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            closeBottomSheets();
         }
 
-        loadDB(); initGrid();
+        document.addEventListener('DOMContentLoaded', () => {
+            initGrid(); 
+            try { loadDB(); } catch(e) { console.error("שגיאה בטעינת המאגר", e); }
+        });
     </script>
 </body>
 </html>
